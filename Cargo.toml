@@ -1,0 +1,23 @@
+[package]
+name = "bevy_turborand"
+version = "0.1.0"
+edition = "2021"
+authors = ["Gonçalo Rica Pais da Silva <bluefinger@gmail.com>"]
+description = "A plugin to enable random number generation for the Bevy game engine."
+repository = "https://github.com/Bluefinger/bevy_turborand"
+license = "Apache-2.0 OR MIT"
+keywords = ["bevy", "gamedev", "rand", "random", "wyrand"]
+categories = ["game-development", "game-engines"]
+exclude = ["/.*"]
+resolver = "2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = "0.7"
+turborand = "0.3"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+rustc-args = ["--cfg", "docsrs"]
