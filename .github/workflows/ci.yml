@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  RUSTFLAGS: -D warnings
+  RUST_BACKTRACE: 1
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        rust: [nightly, beta, stable]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        # --no-self-update is necessary because the windows environment cannot self-update rustup.exe.
+        run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
+      - name: Run cargo check
+        run: cargo check --all --all-features --all-targets
+        if: startsWith(matrix.rust, 'nightly')
+      - name: Run cargo check (without dev-dependencies to catch missing feature flags)
+        if: startsWith(matrix.rust, 'nightly')
+        run: cargo check -Z features=dev_dep
+      - run: cargo test --all-features
