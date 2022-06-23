@@ -1,9 +1,9 @@
 # bevy_turborand
 
-[![CI](https://github.com/Bluefinger/turborand/actions/workflows/ci.yml/badge.svg)](https://github.com/Bluefinger/bevy_turborand/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/license-Apache--2.0_OR_MIT-blue.svg)]
-[![Cargo](https://img.shields.io/crates/v/turborand.svg)](https://crates.io/crates/bevy_turborand)
-[![Documentation](https://docs.rs/turborand/badge.svg)](https://docs.rs/bevy_turborand)
+[![CI](https://github.com/Bluefinger/bevy_turborand/actions/workflows/ci.yml/badge.svg)](https://github.com/Bluefinger/bevy_turborand/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0_OR_MIT-blue.svg)](https://github.com/Bluefinger/bevy_turborand)
+[![Cargo](https://img.shields.io/crates/v/bevy_turborand.svg)](https://crates.io/crates/bevy_turborand)
+[![Documentation](https://docs.rs/bevy_turborand/badge.svg)](https://docs.rs/bevy_turborand)
 
 A plugin to enable random number generation for the Bevy game engine, built upon [`turborand`](https://github.com/Bluefinger/turborand).
 Implements ideas from Bevy's [Deterministic RNG RFC](https://github.com/bevyengine/rfcs/pull/55).
