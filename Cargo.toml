@@ -14,7 +14,7 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = "0.7"
+bevy = { version = "0.7", default-features = false }
 turborand = "0.3"
 
 [package.metadata.docs.rs]
