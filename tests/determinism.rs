@@ -3,6 +3,12 @@
 use bevy::prelude::*;
 use bevy_turborand::*;
 
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_test::*;
+
+#[cfg(target_arch = "wasm32")]
+wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
 #[derive(Debug, Component, Default)]
 struct HitPoints {
     total: u32,
@@ -75,6 +81,7 @@ fn buff_player(
 }
 
 #[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn deterministic_play_through() {
     // Set up the game App and World
     let mut app = App::new();

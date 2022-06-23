@@ -25,7 +25,10 @@ jobs:
         run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-        if: startsWith(matrix.os, 'ubuntu-latest')
+        if: startsWith(matrix.os, 'ubuntu')
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@wasm-pack
+        if: startsWith(matrix.os, 'ubuntu')
       - name: Run cargo check
         run: cargo check --all --all-features --all-targets
         if: startsWith(matrix.rust, 'nightly')
@@ -33,3 +36,6 @@ jobs:
         if: startsWith(matrix.rust, 'nightly')
         run: cargo check -Z features=dev_dep
       - run: cargo test --all-features
+      - name: Test wasm
+        run: wasm-pack test --headless --chrome --firefox
+        if: startsWith(matrix.os, 'ubuntu')
