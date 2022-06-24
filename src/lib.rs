@@ -66,8 +66,8 @@
 //!         .insert(RngComponent::from_global(&mut global_rng));
 //! }
 //!
-//! fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
-//!     let rng = q_player.single_mut();
+//! fn do_damage(mut q_player: Query<&RngComponent, With<Player>>) {
+//!     let rng = q_player.single();
 //!     println!("Player attacked for {} damage!", rng.u32(10..=20));
 //! }
 //!
@@ -118,7 +118,7 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 use bevy::prelude::*;
-use turborand::{CellState, Rng, rng};
+use turborand::{AtomicState, Rng, atomic_rng};
 
 /// Module for dealing directly with [`turborand`] and its features.
 ///
@@ -164,7 +164,7 @@ pub mod rng {
 /// created automatically with [`RngPlugin`], or can be created
 /// and added manually.
 #[derive(Debug, Deref, DerefMut)]
-pub struct GlobalRng(Rng<CellState>);
+pub struct GlobalRng(Rng<AtomicState>);
 
 unsafe impl Sync for GlobalRng {}
 
@@ -184,20 +184,20 @@ impl GlobalRng {
     #[inline]
     #[must_use]
     pub fn with_seed(seed: u64) -> Self {
-        Self(rng!(seed))
+        Self(atomic_rng!(seed))
     }
 
     /// Create a new [`GlobalRng`] instance with a randomized seed value.
     #[inline]
     #[must_use]
     pub fn randomized() -> Self {
-        Self(rng!())
+        Self(atomic_rng!())
     }
 
     /// Returns the internal [`Rng<CellState>`] reference.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self) -> &mut Rng<CellState> {
+    pub fn get_mut(&mut self) -> &mut Rng<AtomicState> {
         &mut self.0
     }
 }
@@ -213,7 +213,7 @@ impl Default for GlobalRng {
 
 /// A [`Rng`] component that wraps a random number generator.
 #[derive(Debug, Deref, DerefMut, Component)]
-pub struct RngComponent(Rng<CellState>);
+pub struct RngComponent(Rng<AtomicState>);
 
 unsafe impl Sync for RngComponent {}
 
@@ -233,20 +233,20 @@ impl RngComponent {
     #[inline]
     #[must_use]
     pub fn with_seed(seed: u64) -> Self {
-        Self(rng!(seed))
+        Self(atomic_rng!(seed))
     }
 
     /// Create a new [`RngComponent`] instance with a randomized seed value.
     #[inline]
     #[must_use]
     pub fn randomized() -> Self {
-        Self(rng!())
+        Self(atomic_rng!())
     }
 
     /// Creates a new [`RngComponent`] instance by cloning from an [`Rng<CellState>`].
     #[inline]
     #[must_use]
-    pub fn from_rng(rng: &Rng<CellState>) -> Self {
+    pub fn from_rng(rng: &Rng<AtomicState>) -> Self {
         Self(rng.clone())
     }
 
@@ -261,7 +261,7 @@ impl RngComponent {
     /// Returns the internal [`Rng<CellState>`] reference.
     #[inline]
     #[must_use]
-    pub fn get_mut(&mut self) -> &mut Rng<CellState> {
+    pub fn get_mut(&mut self) -> &mut Rng<AtomicState> {
         &mut self.0
     }
 }

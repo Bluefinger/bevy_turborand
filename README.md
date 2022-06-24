@@ -26,8 +26,8 @@ fn setup_player(mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
         .insert(RngComponent::from_global(&mut global_rng));
 }
 
-fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
-    let rng = q_player.single_mut();
+fn do_damage(mut q_player: Query<&RngComponent, With<Player>>) {
+    let rng = q_player.single();
     println!("Player attacked for {} damage!", rng.u32(10..=20));
 }
 

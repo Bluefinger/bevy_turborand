@@ -14,7 +14,7 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { version = "0.7", default-features = false }
-turborand = "0.3"
+turborand = { version = "0.3", features = ["atomic"] }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"

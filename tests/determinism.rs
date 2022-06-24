@@ -37,11 +37,11 @@ struct Enemy;
 /// A system for enemies attacking the player, applying randomised damage if they are able to land a hit.
 fn attack_player(
     mut q_player: Query<&mut HitPoints, (With<Player>, Without<Enemy>)>,
-    mut q_enemies: Query<(&Attack, &mut RngComponent), (With<Enemy>, Without<Player>)>,
+    q_enemies: Query<(&Attack, &RngComponent), (With<Enemy>, Without<Player>)>,
 ) {
     let mut player = q_player.single_mut();
 
-    for (attack, rng) in q_enemies.iter_mut() {
+    for (attack, rng) in q_enemies.iter() {
         if rng.chance(attack.hit) {
             player.total = player.total.saturating_sub(rng.u32(attack.min..=attack.max));
         }
@@ -51,9 +51,9 @@ fn attack_player(
 /// A system for seeing if the player will apply an attack on a random enemy or miss if unlucky!
 fn attack_random_enemy(
     mut q_enemies: Query<&mut HitPoints, (With<Enemy>, Without<Player>)>,
-    mut q_player: Query<(&Attack, &mut RngComponent), (With<Player>, Without<Enemy>)>,
+    q_player: Query<(&Attack, &RngComponent), (With<Player>, Without<Enemy>)>,
 ) {
-    let (attack, rng) = q_player.single_mut();
+    let (attack, rng) = q_player.single();
     for mut enemy in q_enemies.iter_mut() {
         if rng.chance(attack.hit) {
             enemy.total = enemy.total.saturating_sub(rng.u32(attack.min..=attack.max));
@@ -64,7 +64,7 @@ fn attack_random_enemy(
 
 /// A system to randomly apply a healing effect on the player.
 fn buff_player(
-    mut q_player: Query<(&mut HitPoints, &mut RngComponent, &Buff), With<Player>>,
+    mut q_player: Query<(&mut HitPoints, &RngComponent, &Buff), With<Player>>,
 ) {
     let (mut player, rng, buff) = q_player.single_mut();
     if rng.chance(buff.chance) {
