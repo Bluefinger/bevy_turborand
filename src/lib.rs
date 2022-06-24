@@ -67,11 +67,7 @@
 //! }
 //!
 //! fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
-//!     let mut rng = q_player.single_mut();
-//!
-//!     // Must call `.get_mut()` to get the Rng instance before it can be used
-//!     let rng = rng.get_mut();
-//!
+//!     let rng = q_player.single_mut();
 //!     println!("Player attacked for {} damage!", rng.u32(10..=20));
 //! }
 //!
@@ -122,7 +118,7 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 use bevy::prelude::*;
-use turborand::*;
+use turborand::{CellState, Rng, rng};
 
 /// Module for dealing directly with [`turborand`] and its features.
 ///
@@ -167,7 +163,7 @@ pub mod rng {
 /// A Global [`Rng`] instance, meant for use as a Resource. Gets
 /// created automatically with [`RngPlugin`], or can be created
 /// and added manually.
-#[derive(Debug)]
+#[derive(Debug, Deref, DerefMut)]
 pub struct GlobalRng(Rng<CellState>);
 
 unsafe impl Sync for GlobalRng {}
@@ -176,15 +172,31 @@ impl GlobalRng {
     /// Create a new [`GlobalRng`] instance with an optional seed value.
     /// Uses a randomised seed if `None` is provided.
     #[inline]
+    #[must_use]
     pub fn new(seed: Option<u64>) -> Self {
         match seed {
-            Some(s) => Self(rng!(s)),
-            None => Self(rng!()),
+            Some(s) => Self::with_seed(s),
+            None => Self::randomized(),
         }
+    }
+
+    /// Create a new [`GlobalRng`] instance with a seed value.
+    #[inline]
+    #[must_use]
+    pub fn with_seed(seed: u64) -> Self {
+        Self(rng!(seed))
+    }
+
+    /// Create a new [`GlobalRng`] instance with a randomized seed value.
+    #[inline]
+    #[must_use]
+    pub fn randomized() -> Self {
+        Self(rng!())
     }
 
     /// Returns the internal [`Rng<CellState>`] reference.
     #[inline]
+    #[must_use]
     pub fn get_mut(&mut self) -> &mut Rng<CellState> {
         &mut self.0
     }
@@ -200,7 +212,7 @@ impl Default for GlobalRng {
 }
 
 /// A [`Rng`] component that wraps a random number generator.
-#[derive(Debug, Component)]
+#[derive(Debug, Deref, DerefMut, Component)]
 pub struct RngComponent(Rng<CellState>);
 
 unsafe impl Sync for RngComponent {}
@@ -209,15 +221,31 @@ impl RngComponent {
     /// Create a new [`RngComponent`] instance with an optional seed value.
     /// Uses a randomised seed if `None` is provided.
     #[inline]
+    #[must_use]
     pub fn new(seed: Option<u64>) -> Self {
         match seed {
-            Some(s) => Self(rng!(s)),
-            None => Self(rng!()),
+            Some(s) => Self::with_seed(s),
+            None => Self::randomized(),
         }
+    }
+
+    /// Create a new [`RngComponent`] instance with a seed value.
+    #[inline]
+    #[must_use]
+    pub fn with_seed(seed: u64) -> Self {
+        Self(rng!(seed))
+    }
+
+    /// Create a new [`RngComponent`] instance with a randomized seed value.
+    #[inline]
+    #[must_use]
+    pub fn randomized() -> Self {
+        Self(rng!())
     }
 
     /// Creates a new [`RngComponent`] instance by cloning from an [`Rng<CellState>`].
     #[inline]
+    #[must_use]
     pub fn from_rng(rng: &Rng<CellState>) -> Self {
         Self(rng.clone())
     }
@@ -225,12 +253,14 @@ impl RngComponent {
     /// Creates a new [`RngComponent`] directly from a [`GlobalRng`], by cloning the
     /// internal [`Rng<CellState>`] instance.
     #[inline]
+    #[must_use]
     pub fn from_global(rng: &mut GlobalRng) -> Self {
         Self::from_rng(rng.get_mut())
     }
 
     /// Returns the internal [`Rng<CellState>`] reference.
     #[inline]
+    #[must_use]
     pub fn get_mut(&mut self) -> &mut Rng<CellState> {
         &mut self.0
     }
@@ -246,14 +276,22 @@ impl Default for RngComponent {
 }
 
 /// A [`Plugin`] for initialising a [`GlobalRng`] into a Bevy `App`.
+#[derive(Debug)]
 pub struct RngPlugin(Option<u64>);
 
 impl RngPlugin {
-    /// Create a new [`RngPlugin`] instance with an optional seed value.
-    /// Uses a randomised seed if `None` is provided.
+    /// Create a new [`RngPlugin`] instance with a seed value.
     #[inline]
-    pub fn new(seed: Option<u64>) -> Self {
-        Self(seed)
+    #[must_use]
+    pub const fn new(seed: u64) -> Self {
+        Self(Some(seed))
+    }
+
+    /// Create a new [`RngPlugin`] instance with a randomized seed.
+    #[inline]
+    #[must_use]
+    pub const fn empty() -> Self {
+        Self(None)
     }
 }
 
@@ -262,7 +300,7 @@ impl Default for RngPlugin {
     /// be initialised with a randomised seed, so this is **not**
     /// deterministic.
     fn default() -> Self {
-        Self::new(None)
+        Self::empty()
     }
 }
 

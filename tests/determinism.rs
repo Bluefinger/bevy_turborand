@@ -41,9 +41,7 @@ fn attack_player(
 ) {
     let mut player = q_player.single_mut();
 
-    for (attack, mut rng) in q_enemies.iter_mut() {
-        let rng = rng.get_mut();
-
+    for (attack, rng) in q_enemies.iter_mut() {
         if rng.chance(attack.hit) {
             player.total = player.total.saturating_sub(rng.u32(attack.min..=attack.max));
         }
@@ -55,10 +53,7 @@ fn attack_random_enemy(
     mut q_enemies: Query<&mut HitPoints, (With<Enemy>, Without<Player>)>,
     mut q_player: Query<(&Attack, &mut RngComponent), (With<Player>, Without<Enemy>)>,
 ) {
-    let (attack, mut rng) = q_player.single_mut();
-
-    let rng = rng.get_mut();
-
+    let (attack, rng) = q_player.single_mut();
     for mut enemy in q_enemies.iter_mut() {
         if rng.chance(attack.hit) {
             enemy.total = enemy.total.saturating_sub(rng.u32(attack.min..=attack.max));
@@ -71,10 +66,7 @@ fn attack_random_enemy(
 fn buff_player(
     mut q_player: Query<(&mut HitPoints, &mut RngComponent, &Buff), With<Player>>,
 ) {
-    let (mut player, mut rng, buff) = q_player.single_mut();
-
-    let rng = rng.get_mut();
-
+    let (mut player, rng, buff) = q_player.single_mut();
     if rng.chance(buff.chance) {
         player.total = player.total.saturating_add(rng.u32(buff.min..=buff.max)).clamp(0, player.max);
     }
