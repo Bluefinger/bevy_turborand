@@ -42,8 +42,6 @@ fn attack_player(
     let mut player = q_player.single_mut();
 
     for (attack, mut rng) in q_enemies.iter_mut() {
-        let rng = rng.get_mut();
-
         if rng.chance(attack.hit) {
             player.total = player.total.saturating_sub(rng.u32(attack.min..=attack.max));
         }
@@ -56,8 +54,6 @@ fn attack_random_enemy(
     mut q_player: Query<(&Attack, &mut RngComponent), (With<Player>, Without<Enemy>)>,
 ) {
     let (attack, mut rng) = q_player.single_mut();
-
-    let rng = rng.get_mut();
 
     for mut enemy in q_enemies.iter_mut() {
         if rng.chance(attack.hit) {
@@ -73,8 +69,6 @@ fn buff_player(
 ) {
     let (mut player, mut rng, buff) = q_player.single_mut();
 
-    let rng = rng.get_mut();
-
     if rng.chance(buff.chance) {
         player.total = player.total.saturating_add(rng.u32(buff.min..=buff.max)).clamp(0, player.max);
     }
@@ -89,7 +83,7 @@ fn deterministic_play_through() {
     let world = &mut app.world;
 
     // Initialise our global Rng resource
-    let mut global_rng = GlobalRng::new(Some(123456));
+    let global_rng = GlobalRng::new(Some(12345));
 
     // Spawn the player
     let mut player = world.spawn();
@@ -109,7 +103,7 @@ fn deterministic_play_through() {
             max: 6,
             chance: 0.10,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from_global(&global_rng))
         .id();
 
     // Spawn some enemies for the player to fight with
@@ -125,7 +119,7 @@ fn deterministic_play_through() {
             max: 6,
             hit: 0.5,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from_global(&global_rng))
         .id();
 
     let mut enemy_2 = world.spawn();
@@ -140,7 +134,7 @@ fn deterministic_play_through() {
             max: 6,
             hit: 0.5,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from_global(&global_rng))
         .id();
 
     // Add the systems to our App. Order the necessary systems in order
@@ -152,24 +146,24 @@ fn deterministic_play_through() {
     // Run the game once!
     app.update();
 
-    // Check to see the health of our combatants, looks like player missed his attacks...
+    // Check to see the health of our combatants
     assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 100);
     assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 20);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 20);
+    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 11);
 
     // Again!
     app.update();
 
-    // Player OP, nerf heals.
-    assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 100);
-    assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 13);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 20);
+    // Player OP. Enemy 2 is in trouble
+    assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 90);
+    assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 20);
+    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 3);
 
     // And again!
     app.update();
 
-    // Enemies are in trouble...
-    assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 96);
-    assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 13);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 12);
+    // Enemy 2 is now deceased
+    assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 88);
+    assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 20);
+    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 0);
 }

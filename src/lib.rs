@@ -83,9 +83,9 @@
 //!         .run();
 //! }
 //! ```
-//! 
+//!
 //! # How to enable Determinism
-//! 
+//!
 //! In order to obtain determinism for your game/app, the [`Rng`]'s must be
 //! seeded. [`GlobalRng`] and [`RngPlugin`] can given a seed which then sets the
 //! internal PRNG to behave deterministically. Instead of having to seed every
@@ -94,35 +94,43 @@
 //! the internal Rng to itself, which gives it a random but deterministic seed.
 //! This allows for better randomised states among [`RngComponent`]s while still
 //! having a deterministic app.
-//! 
+//!
 //! Systems also must be ordered correctly for determinism to occur. Systems
 //! however do not need to be strictly ordered against every one as if some
 //! linear path. Only related systems that access a given set of [`RngComponent`]s
 //! need to be ordered. Ones that are unrelated can run in parallel and still
-//! yield a deterministic result. So systems selecting a `Player` entity with 
+//! yield a deterministic result. So systems selecting a `Player` entity with
 //! a [`RngComponent`] should all be ordered against each other, but systems
 //! selecting an `Item` entity with an [`RngComponent`] that never interacts with
 //! `Player` don't need to be ordered with `Player` systems, only between
 //! themselves.
-//! 
+//!
 //! To see an example of this, view the project's tests to see how to make
 //! use of determinism for testing random systems.
-//! 
+//!
 //! # Caveats about Determinism
-//! 
+//!
 //! Any [`Rng`] method that relies on `usize` will not exhibit the same result
 //! on 64-bit systems and 32-bit systems. The [`Rng`] output will be different
 //! on those platforms, though it will be deterministically different. This is
 //! because the output of the `WyRand` algorithm for usize on 32-bit platforms
 //! is `u32` and thus is truncating the full `u64` output from the generator.
 //! As such, it will not be the same value between 32-bit and 64-bit platforms.
-//! 
+//!
 //! Methods that are susceptible to this are `usize`, `sample`, `weighted_sample`
 //! and `shuffle`.
 #![warn(missing_docs, rust_2018_idioms)]
 
 use bevy::prelude::*;
-use turborand::*;
+use turborand::{atomic_rng, rng, AtomicState, CellState, Rng, State};
+
+use std::{fmt::Debug, ops::RangeBounds};
+
+pub use component::*;
+pub use global::*;
+
+mod component;
+mod global;
 
 /// Module for dealing directly with [`turborand`] and its features.
 ///
@@ -164,87 +172,6 @@ pub mod rng {
     pub use turborand::*;
 }
 
-/// A Global [`Rng`] instance, meant for use as a Resource. Gets
-/// created automatically with [`RngPlugin`], or can be created
-/// and added manually.
-#[derive(Debug)]
-pub struct GlobalRng(Rng<CellState>);
-
-unsafe impl Sync for GlobalRng {}
-
-impl GlobalRng {
-    /// Create a new [`GlobalRng`] instance with an optional seed value.
-    /// Uses a randomised seed if `None` is provided.
-    #[inline]
-    pub fn new(seed: Option<u64>) -> Self {
-        match seed {
-            Some(s) => Self(rng!(s)),
-            None => Self(rng!()),
-        }
-    }
-
-    /// Returns the internal [`Rng<CellState>`] reference.
-    #[inline]
-    pub fn get_mut(&mut self) -> &mut Rng<CellState> {
-        &mut self.0
-    }
-}
-
-impl Default for GlobalRng {
-    /// Creates a default [`GlobalRng`] instance. The instance will
-    /// be initialised with a randomised seed, so this is **not**
-    /// deterministic.
-    fn default() -> Self {
-        Self::new(None)
-    }
-}
-
-/// A [`Rng`] component that wraps a random number generator.
-#[derive(Debug, Component)]
-pub struct RngComponent(Rng<CellState>);
-
-unsafe impl Sync for RngComponent {}
-
-impl RngComponent {
-    /// Create a new [`RngComponent`] instance with an optional seed value.
-    /// Uses a randomised seed if `None` is provided.
-    #[inline]
-    pub fn new(seed: Option<u64>) -> Self {
-        match seed {
-            Some(s) => Self(rng!(s)),
-            None => Self(rng!()),
-        }
-    }
-
-    /// Creates a new [`RngComponent`] instance by cloning from an [`Rng<CellState>`].
-    #[inline]
-    pub fn from_rng(rng: &Rng<CellState>) -> Self {
-        Self(rng.clone())
-    }
-
-    /// Creates a new [`RngComponent`] directly from a [`GlobalRng`], by cloning the
-    /// internal [`Rng<CellState>`] instance.
-    #[inline]
-    pub fn from_global(rng: &mut GlobalRng) -> Self {
-        Self::from_rng(rng.get_mut())
-    }
-
-    /// Returns the internal [`Rng<CellState>`] reference.
-    #[inline]
-    pub fn get_mut(&mut self) -> &mut Rng<CellState> {
-        &mut self.0
-    }
-}
-
-impl Default for RngComponent {
-    /// Creates a default [`RngComponent`] instance. The instance will
-    /// be initialised with a randomised seed, so this is **not**
-    /// deterministic.
-    fn default() -> Self {
-        Self::new(None)
-    }
-}
-
 /// A [`Plugin`] for initialising a [`GlobalRng`] into a Bevy `App`.
 pub struct RngPlugin(Option<u64>);
 
@@ -252,7 +179,8 @@ impl RngPlugin {
     /// Create a new [`RngPlugin`] instance with an optional seed value.
     /// Uses a randomised seed if `None` is provided.
     #[inline]
-    pub fn new(seed: Option<u64>) -> Self {
+    #[must_use]
+    pub const fn new(seed: Option<u64>) -> Self {
         Self(seed)
     }
 }
