@@ -182,6 +182,7 @@ fn deterministic_play_through() {
 }
 
 #[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn deterministic_setup() {
     let mut app = App::new();
 
