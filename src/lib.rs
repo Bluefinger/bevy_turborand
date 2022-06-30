@@ -36,10 +36,12 @@
 //! reference. By doing so, the `Rng` can be even more performant and not
 //! have to rely on atomics (which impose considerable overhead).
 //!
-//! After requesting [`GlobalRng`] resource or the [`RngComponent`], one **must**
-//! call `.get_mut()` in order to get the [`Rng`] instance itself. From there,
-//! all [`Rng`] methods in [`turborand`](https://docs.rs/turborand/latest/turborand/)
-//! are available to be used.
+//! After requesting [`GlobalRng`] resource or the [`RngComponent`], one can use
+//! delegated methods directly to get random numbers that way, or call `.get_mut()`
+//! in order to get the [`Rng`] instance itself. From there, all [`Rng`] methods in
+//! [`turborand`](https://docs.rs/turborand/latest/turborand/) are available to be
+//! used, though most are available as delegated methods in [`GlobalRng`] and
+//! [`RngComponent`].
 //!
 //! [`GlobalRng`] is provided as a means to seed [`RngComponent`] with randomised
 //! states, and should **not** be used as a direct source of entropy for
@@ -68,9 +70,6 @@
 //!
 //! fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
 //!     let mut rng = q_player.single_mut();
-//!
-//!     // Must call `.get_mut()` to get the Rng instance before it can be used
-//!     let rng = rng.get_mut();
 //!
 //!     println!("Player attacked for {} damage!", rng.u32(10..=20));
 //! }
@@ -117,17 +116,20 @@
 //! is `u32` and thus is truncating the full `u64` output from the generator.
 //! As such, it will not be the same value between 32-bit and 64-bit platforms.
 //!
-//! Methods that are susceptible to this are `usize`, `sample`, `weighted_sample`
-//! and `shuffle`.
+//! Methods that are susceptible to this are `usize`, `sample`, `sample_multiple`,
+//! `weighted_sample` and `shuffle`.
 #![warn(missing_docs, rust_2018_idioms)]
 
 use bevy::prelude::*;
-use turborand::{atomic_rng, rng, AtomicState, CellState, Rng, State};
+use turborand::{rng, CellState, Rng, State};
 
 use std::{fmt::Debug, ops::RangeBounds};
 
 pub use component::*;
 pub use global::*;
+
+#[macro_use]
+mod delegate;
 
 mod component;
 mod global;

@@ -34,6 +34,22 @@ struct Player;
 #[derive(Debug, Component, Default)]
 struct Enemy;
 
+fn setup_player(mut commands: Commands, mut global: ResMut<GlobalRng>) {
+    commands
+        .spawn()
+        .insert(Player)
+        .insert(RngComponent::from_global(&mut global));
+}
+
+fn setup_enemies(mut commands: Commands, mut global: ResMut<GlobalRng>) {
+    for _ in 0..2 {
+        commands
+            .spawn()
+            .insert(Enemy)
+            .insert(RngComponent::from_global(&mut global));
+    }
+}
+
 /// A system for enemies attacking the player, applying randomised damage if they are able to land a hit.
 fn attack_player(
     mut q_player: Query<&mut HitPoints, (With<Player>, Without<Enemy>)>,
@@ -43,7 +59,9 @@ fn attack_player(
 
     for (attack, mut rng) in q_enemies.iter_mut() {
         if rng.chance(attack.hit) {
-            player.total = player.total.saturating_sub(rng.u32(attack.min..=attack.max));
+            player.total = player
+                .total
+                .saturating_sub(rng.u32(attack.min..=attack.max));
         }
     }
 }
@@ -64,13 +82,14 @@ fn attack_random_enemy(
 }
 
 /// A system to randomly apply a healing effect on the player.
-fn buff_player(
-    mut q_player: Query<(&mut HitPoints, &mut RngComponent, &Buff), With<Player>>,
-) {
+fn buff_player(mut q_player: Query<(&mut HitPoints, &mut RngComponent, &Buff), With<Player>>) {
     let (mut player, mut rng, buff) = q_player.single_mut();
 
     if rng.chance(buff.chance) {
-        player.total = player.total.saturating_add(rng.u32(buff.min..=buff.max)).clamp(0, player.max);
+        player.total = player
+            .total
+            .saturating_add(rng.u32(buff.min..=buff.max))
+            .clamp(0, player.max);
     }
 }
 
@@ -83,7 +102,7 @@ fn deterministic_play_through() {
     let world = &mut app.world;
 
     // Initialise our global Rng resource
-    let global_rng = GlobalRng::new(Some(12345));
+    let mut global_rng = GlobalRng::new(Some(12345));
 
     // Spawn the player
     let mut player = world.spawn();
@@ -91,7 +110,7 @@ fn deterministic_play_through() {
         .insert(Player)
         .insert(HitPoints {
             total: 100,
-            max: 100
+            max: 100,
         })
         .insert(Attack {
             min: 5,
@@ -103,38 +122,32 @@ fn deterministic_play_through() {
             max: 6,
             chance: 0.10,
         })
-        .insert(RngComponent::from_global(&global_rng))
+        .insert(RngComponent::from_global(&mut global_rng))
         .id();
 
     // Spawn some enemies for the player to fight with
     let mut enemy_1 = world.spawn();
     let enemy_1_id = enemy_1
         .insert(Enemy)
-        .insert(HitPoints {
-            total: 20,
-            max: 20,
-        })
+        .insert(HitPoints { total: 20, max: 20 })
         .insert(Attack {
             min: 3,
             max: 6,
             hit: 0.5,
         })
-        .insert(RngComponent::from_global(&global_rng))
+        .insert(RngComponent::from_global(&mut global_rng))
         .id();
 
     let mut enemy_2 = world.spawn();
     let enemy_2_id = enemy_2
         .insert(Enemy)
-        .insert(HitPoints {
-            total: 20,
-            max: 20,
-        })
+        .insert(HitPoints { total: 20, max: 20 })
         .insert(Attack {
             min: 3,
             max: 6,
             hit: 0.5,
         })
-        .insert(RngComponent::from_global(&global_rng))
+        .insert(RngComponent::from_global(&mut global_rng))
         .id();
 
     // Add the systems to our App. Order the necessary systems in order
@@ -166,4 +179,34 @@ fn deterministic_play_through() {
     assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 88);
     assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 20);
     assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 0);
+}
+
+#[test]
+fn deterministic_setup() {
+    let mut app = App::new();
+
+    app.insert_resource(GlobalRng::new(Some(23456)));
+
+    app.add_startup_system(setup_player);
+    app.add_startup_system(setup_enemies.after(setup_player));
+
+    app.update();
+
+    let mut q_player = app
+        .world
+        .query_filtered::<&mut RngComponent, With<Player>>();
+    let mut player = q_player.single_mut(&mut app.world);
+
+    assert_eq!(player.u32(..=10), 10);
+
+    let mut q_enemies = app.world.query_filtered::<&mut RngComponent, With<Enemy>>();
+    let mut enemies = q_enemies.iter_mut(&mut app.world);
+
+    let mut enemy_1 = enemies.next().unwrap();
+
+    assert_eq!(enemy_1.u32(..=10), 1);
+
+    let mut enemy_2 = enemies.next().unwrap();
+
+    assert_eq!(enemy_2.u32(..=10), 7);
 }
