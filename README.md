@@ -28,8 +28,7 @@ fn setup_player(mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
 
 fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
     let mut rng = q_player.single_mut();
-    // Must call `.get_mut()` to get the Rng instance before it can be used
-    let rng = rng.get_mut();
+
     println!("Player attacked for {} damage!", rng.u32(10..=20));
 }
 
