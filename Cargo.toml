@@ -13,8 +13,8 @@ resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy = { version = "0.8.0-dev", git = "https://github.com/bevyengine/bevy", rev="5f8e43833d49fa5c9c2ad2388615d23cb96ea7ae", default-features = false }
-turborand = "0.4"
+bevy = { version = "0.8.0-dev", git = "https://github.com/bevyengine/bevy", rev="5b5013d54035da09eebdd365b513486248f6726e", default-features = false }
+turborand = "0.5"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"

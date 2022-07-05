@@ -124,16 +124,16 @@ impl RngComponent {
         "Delegated [`Rng::isize`] method from [`Rng`]."
     );
     delegate_rng!(
-        char,
-        char,
-        impl RangeBounds<char>,
-        "Delegated [`Rng::char`] method from [`Rng`]."
-    );
-    delegate_rng!(
         chance,
         bool,
         f64,
         "Delegated [`Rng::chance`] method from [`Rng`]."
+    );
+    delegate_rng!(
+        char,
+        char,
+        impl RangeBounds<char>,
+        "Delegated [`Rng::char`] method from [`Rng`]."
     );
     delegate_rng!(
         digit,
@@ -174,6 +174,12 @@ impl RngComponent {
         f32,
         "Delegated [`Rng::f32_normalized`] method from [`Rng`]."
     );
+
+    /// Delegated [`Rng::fill_bytes`] method from [`Rng`].
+    #[inline]
+    pub fn fill_bytes<B: AsMut<[u8]>>(&mut self, buffer: B) {
+        self.get_mut().fill_bytes(buffer);
+    }
 
     /// Delegated [`Rng::shuffle`] method from [`Rng`].
     #[inline]
