@@ -46,6 +46,24 @@ impl RngComponent {
     /// Returns the internal [`Rng<CellState>`] reference. Useful
     /// for working directly with the internal [`Rng`], such as
     /// needing to pass the [`Rng`] into iterators.
+    ///
+    /// # Example
+    /// ```
+    /// use bevy::prelude::*;
+    /// use bevy_turborand::*;
+    /// use std::iter::repeat_with;
+    ///
+    /// fn contrived_random_actions(mut q_rand: Query<&mut RngComponent>) {
+    ///     for mut rand in q_rand.iter_mut() {
+    ///         let rand = rand.get_mut(); // Important to shadow the rand mut reference into being an immutable `Rng<CellState>` one.
+    ///
+    ///         // Now the `Rng<CellState>` can be borrowed in multiple places in the iterator without issue.
+    ///         let output: Vec<f64> = repeat_with(|| rand.f64()).take(5).filter(|&val| rand.chance(val)).collect();
+    ///
+    ///         println!("Received random values: {:?}", output);
+    ///     }
+    /// }
+    /// ```
     #[inline]
     pub fn get_mut(&mut self) -> &mut Rng<CellState> {
         &mut self.0
