@@ -118,12 +118,22 @@
 //!
 //! Methods that are susceptible to this are `usize`, `sample`, `sample_multiple`,
 //! `weighted_sample` and `shuffle`.
+//! 
+//! # Features
+//! 
+//! * `rand` - Provides [`RandCompat`], which implements [`RngCore`] and [`SeedableRng`]
+//!   so to allow for compatibility with `rand` ecosystem of crates.
+//! * `serialize` - Enables [`Serialize`] and [`Deserialize`] derives on [`Rng`],
+//!   [`RngComponent`] and [`GlobalRng`].
 #![warn(missing_docs, rust_2018_idioms)]
 
 use bevy::prelude::*;
 use turborand::{rng, CellState, Rng, State};
 
 use std::{fmt::Debug, ops::RangeBounds};
+
+#[cfg(feature = "serialize")]
+use serde::{Deserialize, Serialize};
 
 pub use component::*;
 pub use global::*;
@@ -191,6 +201,7 @@ impl Default for RngPlugin {
     /// Creates a default [`RngPlugin`] instance. The instance will
     /// be initialised with a randomised seed, so this is **not**
     /// deterministic.
+    #[inline]
     fn default() -> Self {
         Self::new(None)
     }

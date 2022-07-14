@@ -211,3 +211,14 @@ fn deterministic_setup() {
 
     assert_eq!(enemy_2.u32(..=10), 7);
 }
+
+#[cfg(feature = "serialize")]
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn load_rng_setup() {
+    let payload = "{\"state\":24691}";
+
+    let mut rng: RngComponent = serde_json::from_str(payload).unwrap();
+
+    assert_eq!(rng.u32(..10), 4);
+}
