@@ -3,6 +3,7 @@ use crate::*;
 /// A [`Rng`] component that wraps a random number generator,
 /// specifically a [`Rng<CellState>`].
 #[derive(Debug, Component)]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 pub struct RngComponent(Rng<CellState>);
 
 unsafe impl Sync for RngComponent {}
@@ -231,6 +232,7 @@ impl Default for RngComponent {
     /// Creates a default [`RngComponent`] instance. The instance will
     /// be initialised with a randomised seed, so this is **not**
     /// deterministic.
+    #[inline]
     fn default() -> Self {
         Self::new(None)
     }

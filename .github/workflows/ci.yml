@@ -37,5 +37,5 @@ jobs:
         run: cargo check -Z features=dev_dep
       - run: cargo test --all-features
       - name: Test wasm
-        run: wasm-pack test --headless --chrome --firefox
+        run: wasm-pack test --headless --chrome --firefox -- --all-features
         if: startsWith(matrix.os, 'ubuntu')

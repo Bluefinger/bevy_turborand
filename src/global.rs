@@ -4,6 +4,7 @@ use crate::*;
 /// created automatically with [`RngPlugin`], or can be created
 /// and added manually.
 #[derive(Debug)]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 pub struct GlobalRng(Rng<CellState>);
 
 unsafe impl Sync for GlobalRng {}
@@ -212,6 +213,7 @@ impl Default for GlobalRng {
     /// Creates a default [`GlobalRng`] instance. The instance will
     /// be initialised with a randomised seed, so this is **not**
     /// deterministic.
+    #[inline]
     fn default() -> Self {
         Self::new(None)
     }
