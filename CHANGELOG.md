@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Miscellaneous Tasks
+
+- Prepare for release
+
+## [0.2.0] - 2022-07-23
+
 ### Documentation
 
 - Better examples on get_mut() usage and use cases

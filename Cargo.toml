@@ -13,7 +13,7 @@ resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy = { version = "0.8.0-dev", git = "https://github.com/bevyengine/bevy", rev="5b5013d54035da09eebdd365b513486248f6726e", default-features = false }
+bevy = { version = "0.8.0", default-features = false }
 serde = { version = "1.0", features = ["derive"], optional = true }
 turborand = "0.5"
 
