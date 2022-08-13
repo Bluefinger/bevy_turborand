@@ -65,7 +65,7 @@
 //! fn setup_player(mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
 //!     commands.spawn()
 //!         .insert(Player)
-//!         .insert(RngComponent::from_global(&mut global_rng));
+//!         .insert(RngComponent::from(&mut global_rng));
 //! }
 //!
 //! fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
@@ -118,31 +118,39 @@
 //!
 //! Methods that are susceptible to this are `usize`, `sample`, `sample_multiple`,
 //! `weighted_sample` and `shuffle`.
-//! 
+//!
 //! # Features
-//! 
-//! * `rand` - Provides [`RandCompat`], which implements [`RngCore`] and [`SeedableRng`]
+//!
+//! * `rand` - Provides [`RandBorrowed`], which implements `RngCore`
 //!   so to allow for compatibility with `rand` ecosystem of crates.
 //! * `serialize` - Enables [`Serialize`] and [`Deserialize`] derives on [`Rng`],
 //!   [`RngComponent`] and [`GlobalRng`].
 #![warn(missing_docs, rust_2018_idioms)]
 
 use bevy::prelude::*;
-use turborand::{rng, CellState, Rng, State};
-
-use std::{fmt::Debug, ops::RangeBounds};
+use turborand::prelude::*;
+pub use turborand::*;
 
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
-pub use component::*;
-pub use global::*;
+#[cfg(feature = "wyrand")]
+pub use component::rng::*;
+#[cfg(feature = "chacha")]
+pub use component::secure::*;
+#[cfg(feature = "wyrand")]
+pub use global::rng::*;
+#[cfg(feature = "chacha")]
+pub use global::secure::*;
+pub use traits::*;
 
 #[macro_use]
 mod delegate;
-
+#[cfg(any(feature = "chacha", feature = "wyrand"))]
 mod component;
+#[cfg(any(feature = "chacha", feature = "wyrand"))]
 mod global;
+mod traits;
 
 /// Module for dealing directly with [`turborand`] and its features.
 ///
@@ -153,7 +161,7 @@ mod global;
 /// ```
 /// use bevy_turborand::rng::*;
 ///
-/// let rand = rng!();
+/// let rand = Rng::new();
 ///
 /// let value = rand.bool();
 /// ```
@@ -163,7 +171,7 @@ mod global;
 /// ```
 /// use bevy_turborand::rng::*;
 ///
-/// let rand = rng!();
+/// let rand = Rng::new();
 ///
 /// let values = [1, 2, 3, 4, 5];
 ///
@@ -176,39 +184,81 @@ mod global;
 /// use bevy_turborand::rng::*;
 /// use std::iter::repeat_with;
 ///
-/// let rand = rng!();
+/// let rand = Rng::new();
 ///
 /// let values: Vec<_> = repeat_with(|| rand.f32()).take(10).collect();
 /// ```
 pub mod rng {
-    pub use turborand::*;
+    pub use turborand::prelude::*;
 }
 
-/// A [`Plugin`] for initialising a [`GlobalRng`] into a Bevy `App`.
-pub struct RngPlugin(Option<u64>);
+/// A [`Plugin`] for initialising a [`GlobalRng`] & [`GlobalSecureRng`]
+/// (if the feature flags are enabled for either of them) into a Bevy `App`.
+#[cfg(any(feature = "wyrand", feature = "chacha"))]
+pub struct RngPlugin {
+    #[cfg(feature = "wyrand")]
+    rng: Option<u64>,
+    #[cfg(feature = "chacha")]
+    secure: Option<[u8; 40]>,
+}
 
+#[cfg(any(feature = "wyrand", feature = "chacha"))]
 impl RngPlugin {
-    /// Create a new [`RngPlugin`] instance with an optional seed value.
-    /// Uses a randomised seed if `None` is provided.
+    /// Create a new [`RngPlugin`] instance with no seeds provided by default.
+    /// If initialised as is, this will set the RNGs to have randomised seeds.
     #[inline]
     #[must_use]
-    pub const fn new(seed: Option<u64>) -> Self {
-        Self(seed)
+    pub const fn new() -> Self {
+        Self {
+            #[cfg(feature = "wyrand")]
+            rng: None,
+            #[cfg(feature = "chacha")]
+            secure: None,
+        }
+    }
+
+    /// Builder function to set a seed value for a [`GlobalRng`].
+    #[cfg(feature = "wyrand")]
+    #[inline]
+    #[must_use]
+    pub const fn with_rng_seed(mut self, seed: u64) -> Self {
+        self.rng = Some(seed);
+        self
+    }
+
+    /// Builder function to set a seed value for a [`GlobalSecureRng`].
+    #[cfg(feature = "chacha")]
+    #[inline]
+    #[must_use]
+    pub const fn with_secure_seed(mut self, seed: [u8; 40]) -> Self {
+        self.secure = Some(seed);
+        self
     }
 }
 
+#[cfg(any(feature = "wyrand", feature = "chacha"))]
 impl Default for RngPlugin {
-    /// Creates a default [`RngPlugin`] instance. The instance will
-    /// be initialised with a randomised seed, so this is **not**
+    /// Creates a default [`RngPlugin`] instance. The RNG instances will
+    /// be initialised with randomised seeds, so this is **not**
     /// deterministic.
     #[inline]
     fn default() -> Self {
-        Self::new(None)
+        Self::new()
     }
 }
 
+#[cfg(any(feature = "wyrand", feature = "chacha"))]
 impl Plugin for RngPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(GlobalRng::new(self.0));
+        #[cfg(feature = "wyrand")]
+        app.insert_resource(
+            self.rng
+                .map_or_else(|| GlobalRng::new(), |seed| GlobalRng::with_seed(seed)),
+        );
+        #[cfg(feature = "chacha")]
+        app.insert_resource(self.secure.map_or_else(
+            || GlobalSecureRng::new(),
+            |seed| GlobalSecureRng::with_seed(seed),
+        ));
     }
 }

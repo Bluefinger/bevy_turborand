@@ -38,7 +38,7 @@ fn setup_player(mut commands: Commands, mut global: ResMut<GlobalRng>) {
     commands
         .spawn()
         .insert(Player)
-        .insert(RngComponent::from_global(&mut global));
+        .insert(RngComponent::from(&mut global));
 }
 
 fn setup_enemies(mut commands: Commands, mut global: ResMut<GlobalRng>) {
@@ -46,7 +46,7 @@ fn setup_enemies(mut commands: Commands, mut global: ResMut<GlobalRng>) {
         commands
             .spawn()
             .insert(Enemy)
-            .insert(RngComponent::from_global(&mut global));
+            .insert(RngComponent::from(&mut global));
     }
 }
 
@@ -102,7 +102,7 @@ fn deterministic_play_through() {
     let world = &mut app.world;
 
     // Initialise our global Rng resource
-    let mut global_rng = GlobalRng::new(Some(12345));
+    let mut global_rng = GlobalRng::with_seed(12345);
 
     // Spawn the player
     let mut player = world.spawn();
@@ -122,7 +122,7 @@ fn deterministic_play_through() {
             max: 6,
             chance: 0.10,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from(&mut global_rng))
         .id();
 
     // Spawn some enemies for the player to fight with
@@ -135,7 +135,7 @@ fn deterministic_play_through() {
             max: 6,
             hit: 0.5,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from(&mut global_rng))
         .id();
 
     let mut enemy_2 = world.spawn();
@@ -147,7 +147,7 @@ fn deterministic_play_through() {
             max: 6,
             hit: 0.5,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from(&mut global_rng))
         .id();
 
     // Add the systems to our App. Order the necessary systems in order
@@ -186,7 +186,7 @@ fn deterministic_play_through() {
 fn deterministic_setup() {
     let mut app = App::new();
 
-    app.insert_resource(GlobalRng::new(Some(23456)));
+    app.insert_resource(GlobalRng::with_seed(23456));
 
     app.add_startup_system(setup_player);
     app.add_startup_system(setup_enemies.after(setup_player));
