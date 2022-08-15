@@ -38,7 +38,7 @@ fn setup_player(mut commands: Commands, mut global: ResMut<GlobalRng>) {
     commands
         .spawn()
         .insert(Player)
-        .insert(RngComponent::from_global(&mut global));
+        .insert(RngComponent::from(&mut global));
 }
 
 fn setup_enemies(mut commands: Commands, mut global: ResMut<GlobalRng>) {
@@ -46,7 +46,25 @@ fn setup_enemies(mut commands: Commands, mut global: ResMut<GlobalRng>) {
         commands
             .spawn()
             .insert(Enemy)
-            .insert(RngComponent::from_global(&mut global));
+            .insert(RngComponent::from(&mut global));
+    }
+}
+
+#[cfg(feature = "chacha")]
+fn setup_secure_player(mut commands: Commands, mut global: ResMut<GlobalSecureRng>) {
+    commands
+        .spawn()
+        .insert(Player)
+        .insert(SecureRngComponent::from(&mut global));
+}
+
+#[cfg(feature = "chacha")]
+fn setup_secure_enemies(mut commands: Commands, mut global: ResMut<GlobalSecureRng>) {
+    for _ in 0..2 {
+        commands
+            .spawn()
+            .insert(Enemy)
+            .insert(SecureRngComponent::from(&mut global));
     }
 }
 
@@ -102,7 +120,7 @@ fn deterministic_play_through() {
     let world = &mut app.world;
 
     // Initialise our global Rng resource
-    let mut global_rng = GlobalRng::new(Some(12345));
+    let mut global_rng = GlobalRng::with_seed(12345);
 
     // Spawn the player
     let mut player = world.spawn();
@@ -122,7 +140,7 @@ fn deterministic_play_through() {
             max: 6,
             chance: 0.10,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from(&mut global_rng))
         .id();
 
     // Spawn some enemies for the player to fight with
@@ -135,7 +153,7 @@ fn deterministic_play_through() {
             max: 6,
             hit: 0.5,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from(&mut global_rng))
         .id();
 
     let mut enemy_2 = world.spawn();
@@ -147,7 +165,7 @@ fn deterministic_play_through() {
             max: 6,
             hit: 0.5,
         })
-        .insert(RngComponent::from_global(&mut global_rng))
+        .insert(RngComponent::from(&mut global_rng))
         .id();
 
     // Add the systems to our App. Order the necessary systems in order
@@ -186,7 +204,7 @@ fn deterministic_play_through() {
 fn deterministic_setup() {
     let mut app = App::new();
 
-    app.insert_resource(GlobalRng::new(Some(23456)));
+    app.insert_resource(GlobalRng::with_seed(23456));
 
     app.add_startup_system(setup_player);
     app.add_startup_system(setup_enemies.after(setup_player));
@@ -210,6 +228,38 @@ fn deterministic_setup() {
     let mut enemy_2 = enemies.next().unwrap();
 
     assert_eq!(enemy_2.u32(..=10), 7);
+}
+
+#[cfg(feature = "chacha")]
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn deterministic_secure_setup() {
+    let mut app = App::new();
+
+    app.insert_resource(GlobalSecureRng::with_seed([1; 40]));
+
+    app.add_startup_system(setup_secure_player);
+    app.add_startup_system(setup_secure_enemies.after(setup_secure_player));
+
+    app.update();
+
+    let mut q_player = app
+        .world
+        .query_filtered::<&mut SecureRngComponent, With<Player>>();
+    let mut player = q_player.single_mut(&mut app.world);
+
+    assert_eq!(player.u32(..=10), 0);
+
+    let mut q_enemies = app.world.query_filtered::<&mut SecureRngComponent, With<Enemy>>();
+    let mut enemies = q_enemies.iter_mut(&mut app.world);
+
+    let mut enemy_1 = enemies.next().unwrap();
+
+    assert_eq!(enemy_1.u32(..=10), 3);
+
+    let mut enemy_2 = enemies.next().unwrap();
+
+    assert_eq!(enemy_2.u32(..=10), 9);
 }
 
 #[cfg(feature = "serialize")]

@@ -1,9 +1,9 @@
 [package]
 name = "bevy_turborand"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["Gonçalo Rica Pais da Silva <bluefinger@gmail.com>"]
-description = "A plugin to enable random number generation for the Bevy game engine."
+description = "A plugin to enable ECS optimised random number generation for the Bevy game engine."
 repository = "https://github.com/Bluefinger/bevy_turborand"
 license = "Apache-2.0 OR MIT"
 keywords = ["bevy", "gamedev", "rand", "random", "wyrand"]
@@ -15,12 +15,15 @@ resolver = "2"
 [dependencies]
 bevy = { version = "0.8.0", default-features = false }
 serde = { version = "1.0", features = ["derive"], optional = true }
-turborand = "0.5"
+turborand = { git = "https://github.com/Bluefinger/turborand", default-features = false }
 
 [dev-dependencies]
 serde_json = "1.0"
 
 [features]
+default = ["wyrand"]
+wyrand = ["turborand/wyrand"]
+chacha = ["turborand/chacha"]
 serialize = ["dep:serde", "turborand/serialize"]
 rand = ["turborand/rand"]
 
