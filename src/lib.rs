@@ -143,6 +143,7 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 use bevy::prelude::*;
+#[cfg(any(feature = "chacha", feature = "wyrand"))]
 use turborand::prelude::*;
 pub use turborand::*;
 
