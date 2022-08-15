@@ -60,14 +60,14 @@ pub struct SecureRngComponent(SecureRng);
 unsafe impl Sync for SecureRngComponent {}
 
 impl SecureRngComponent {
-    /// Create a new [`SecureRngComponent`] instance with an optional seed value.
-    /// Uses a randomised seed if `None` is provided.
+    /// Create a new [`SecureRngComponent`] with a randomised seed.
     #[inline]
     #[must_use]
     pub fn new() -> Self {
         Self(SecureRng::new())
     }
 
+    /// Create a new [`SecureRngComponent`] with a given seed.
     #[inline]
     #[must_use]
     pub fn with_seed(seed: [u8; 40]) -> Self {

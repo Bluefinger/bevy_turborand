@@ -10,14 +10,14 @@ pub struct GlobalRng(Rng);
 unsafe impl Sync for GlobalRng {}
 
 impl GlobalRng {
-    /// Create a new [`GlobalRng`] instance with an optional seed value.
-    /// Uses a randomised seed if `None` is provided.
+    /// Create a new [`GlobalRng`] instance with a randomised seed.
     #[inline]
     #[must_use]
     pub fn new() -> Self {
         Self(Rng::new())
     }
 
+    /// Create a new [`GlobalRng`] instance with a given seed.
     #[inline]
     #[must_use]
     pub fn with_seed(seed: u64) -> Self {

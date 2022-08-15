@@ -1,13 +1,16 @@
-//! A plugin to enable random number generation for the Bevy game engine.
+//! A plugin to enable ECS optimised random number generation for the Bevy game engine.
 //!
 //! The plugin makes use of [`turborand`](https://docs.rs/turborand/latest/turborand/),
 //! on which the implementation uses [Wyrand](https://github.com/wangyi-fudan/wyhash),
-//! a simple and fast generator but **not** cryptographically secure.
+//! a simple and fast generator but **not** cryptographically secure, as well as
+//! [ChaCha8](https://cr.yp.to/chacha.html), a cryptographically secure generator tuned 
+//! to 8 rounds of the ChaCha algorithm, for the purpose of increasing throughput at the
+//! expense of slightly less security (though plenty secure enough for cryptographic purposes).
 //!
-//! This plugin exposes a [`GlobalRng`] for use as a `Resource`, as well as
-//! a [`RngComponent`] for providing rng instances at a per-entity level. By
-//! exposing random number generation as a component allows for better
-//! parallelisation of systems making use of PRNG, as well as making it
+//! This plugin exposes [`GlobalRng`] & [`GlobalSecureRng`] for use as a `Resource`, 
+//! as well as [`RngComponent`] & [`SecureRngComponent`] for providing rng instances
+//! at a per-entity level. By exposing random number generation as a component allows
+//! for better parallelisation of systems making use of PRNG, as well as making it
 //! easier to enable determinism in an otherwise multi-threaded engine.
 //! Relying on a single `Rng` instance for the entire application is not
 //! conducive to multi-threading, and imposes far too strict ordering
@@ -26,22 +29,23 @@
 //!
 //! # Usage
 //!
-//! For both [`GlobalRng`] and [`RngComponent`], both must be accessed with a
-//! `mut` reference in order to ensure each system using the [`Rng`] instances
+//! For both global and component RNGs, both must be accessed with a
+//! `mut` reference in order to ensure each system using the [`TurboCore`] instances
 //! are not run in parallel over the entities being accessed. This should
 //! also allow for better diagnostics with Bevy's ambiguous ordering tool
 //! for finding systems that should be more explicitly ordered.
 //!
-//! On its own, the [`Rng`] is not threadsafe unless it is accessed via a `mut`
-//! reference. By doing so, the `Rng` can be even more performant and not
+//! On its own, the [`TurboCore`] is not threadsafe unless it is accessed via a `mut`
+//! reference. By doing so, the RNG can be even more performant and not
 //! have to rely on atomics (which impose considerable overhead).
 //!
 //! After requesting [`GlobalRng`] resource or the [`RngComponent`], one can use
 //! delegated methods directly to get random numbers that way, or call `.get_mut()`
-//! in order to get the [`Rng`] instance itself. From there, all [`Rng`] methods in
+//! in order to get the [`TurboCore`] instance itself. From there, all [`TurboRand`] methods in
 //! [`turborand`](https://docs.rs/turborand/latest/turborand/) are available to be
 //! used, though most are available as delegated methods in [`GlobalRng`] and
-//! [`RngComponent`].
+//! [`RngComponent`]. The same applies to [`GlobalSecureRng`] and
+//! [`SecureRngComponent`].
 //!
 //! [`GlobalRng`] is provided as a means to seed [`RngComponent`] with randomised
 //! states, and should **not** be used as a direct source of entropy for
@@ -49,7 +53,14 @@
 //! parallelised easily, so [`RngComponent`] should be used instead as much as
 //! possible. On the plus side with [`GlobalRng`], only one seed needs to be
 //! provided in order to have all instances be deterministic, as long as all
-//! [`RngComponent`]s are created using [`GlobalRng`].
+//! [`RngComponent`]s are created using [`GlobalRng`]. [`RngComponent`] can also
+//! be used to seed other [`RngComponent`]s.
+//! 
+//! **Note**: [`GlobalSecureRng`] & [`SecureRngComponent`] can seed both [`SecureRngComponent`]
+//! and [`RngComponent`]. However, [`GlobalRng`] & [`RngComponent`] cannot be used
+//! to seed [`SecureRngComponent`] as they don't implement [`SecureCore`].
+//! You can only seed from high quality to same quality entropy sources, but never from
+//! worse quality entropy sources.
 //!
 //! # Example
 //!
@@ -85,14 +96,15 @@
 //!
 //! # How to enable Determinism
 //!
-//! In order to obtain determinism for your game/app, the [`Rng`]'s must be
+//! In order to obtain determinism for your game/app, the [`TurboRand`] sources must be
 //! seeded. [`GlobalRng`] and [`RngPlugin`] can given a seed which then sets the
 //! internal PRNG to behave deterministically. Instead of having to seed every
 //! [`RngComponent`] manually, as long as the [`GlobalRng`] is seeded, then
 //! [`RngComponent`] can be created directly from the global instance, cloning
 //! the internal Rng to itself, which gives it a random but deterministic seed.
 //! This allows for better randomised states among [`RngComponent`]s while still
-//! having a deterministic app.
+//! having a deterministic app. [`RngComponent`]s derived from a [`GlobalRng`]
+//! can also then seed other [`RngComponent`]s in a deterministic manner.
 //!
 //! Systems also must be ordered correctly for determinism to occur. Systems
 //! however do not need to be strictly ordered against every one as if some
@@ -109,22 +121,25 @@
 //!
 //! # Caveats about Determinism
 //!
-//! Any [`Rng`] method that relies on `usize` will not exhibit the same result
-//! on 64-bit systems and 32-bit systems. The [`Rng`] output will be different
+//! Any [`TurboRand`] method that relies on `usize` will not exhibit the same result
+//! on 64-bit systems and 32-bit systems. The [`TurboRand`] output will be different
 //! on those platforms, though it will be deterministically different. This is
-//! because the output of the `WyRand` algorithm for usize on 32-bit platforms
-//! is `u32` and thus is truncating the full `u64` output from the generator.
+//! because the output of the RNG source for usize on 32-bit platforms
+//! is `u32` and thus is truncating the full output from the generator.
 //! As such, it will not be the same value between 32-bit and 64-bit platforms.
 //!
-//! Methods that are susceptible to this are `usize`, `sample`, `sample_multiple`,
-//! `weighted_sample` and `shuffle`.
+//! Methods that are susceptible to this are [`TurboRand::usize`], [`TurboRand::sample`],
+//! [`TurboRand::sample_multiple`], [`TurboRand::weighted_sample`] and [`TurboRand::shuffle`].
 //!
 //! # Features
 //!
-//! * `rand` - Provides [`RandBorrowed`], which implements `RngCore`
+//! - **`wyrand`** - Enables [`GlobalRng`] & [`RngComponent`]. Is enabled by default.
+//!   Having this feature flag enabled also enables [`RngPlugin`].
+//! - **`chacha`** - Enables [`GlobalSecureRng`] & [`SecureRngComponent`]. Having this
+//!   feature flag enabled also enables [`RngPlugin`].
+//! - **`rand`** - Provides [`RandBorrowed`], which implements `RngCore`
 //!   so to allow for compatibility with `rand` ecosystem of crates.
-//! * `serialize` - Enables [`Serialize`] and [`Deserialize`] derives on [`Rng`],
-//!   [`RngComponent`] and [`GlobalRng`].
+//! - **`serialize`** - Enables [`Serialize`] and [`Deserialize`] derives.
 #![warn(missing_docs, rust_2018_idioms)]
 
 use bevy::prelude::*;

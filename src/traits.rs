@@ -1,15 +1,31 @@
-use crate::{SeededCore, TurboCore, TurboRand};
+use crate::*;
 use std::{fmt::Debug, ops::RangeBounds};
 
 #[cfg(feature = "rand")]
 use crate::RandBorrowed;
 
-/// Something
+/// A trait for applying to [`Component`]s and Resources that wrap a [`TurboCore`] RNG source.
+///
+/// It provides a threadsafe layer to access the underlying [`TurboCore`] source, which it achieves
+/// via only exposing it through a `&mut` reference. This then communicates to the ECS to never schedule
+/// systems that access the same overlapping components more than one at a time. Therefore, only one
+/// system at a any given time can access a `&mut` referenced [`Component`], ensuring that it is then
+/// threadsafe.
+///
+/// The trait requires one to implement [`DelegatedRng::get_mut`] as the method that underpins the means
+/// by which one interacts with the [`TurboCore`] RNG. It also then enables a variety of delegated methods
+/// from the [`TurboRand`] trait to be accessed directly under a `&mut self` method. However, this is
+/// not always the most ergonomic way to use the RNG, so getting to the inner [`TurboCore`] source via
+/// [`DelegatedRng::get_mut`] is the other manner to use the RNG within a system, giving access to
+/// `&self` methods of [`TurboRand`].
 pub trait DelegatedRng
 where
     Self::Source: Default + Debug + Clone + PartialEq + TurboCore + TurboRand + SeededCore,
 {
-    /// The source
+    /// The [`TurboCore`] instance that provides the RNG source for the trait. Sources need to implement
+    /// [`Default`], [`Debug`] (ensuring it does not leak internal state), [`Clone`] and [`PartialEq`], as
+    /// well as [`SeededCore`]. [`TurboRand`] is an auto-trait, and is implemented automatically to anything
+    /// that implements [`TurboCore`].
     type Source;
 
     /// Returns the internal [`TurboRand`] reference. Useful
