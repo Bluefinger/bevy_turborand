@@ -50,6 +50,24 @@ fn setup_enemies(mut commands: Commands, mut global: ResMut<GlobalRng>) {
     }
 }
 
+#[cfg(feature = "chacha")]
+fn setup_secure_player(mut commands: Commands, mut global: ResMut<GlobalSecureRng>) {
+    commands
+        .spawn()
+        .insert(Player)
+        .insert(SecureRngComponent::from(&mut global));
+}
+
+#[cfg(feature = "chacha")]
+fn setup_secure_enemies(mut commands: Commands, mut global: ResMut<GlobalSecureRng>) {
+    for _ in 0..2 {
+        commands
+            .spawn()
+            .insert(Enemy)
+            .insert(SecureRngComponent::from(&mut global));
+    }
+}
+
 /// A system for enemies attacking the player, applying randomised damage if they are able to land a hit.
 fn attack_player(
     mut q_player: Query<&mut HitPoints, (With<Player>, Without<Enemy>)>,
@@ -210,6 +228,38 @@ fn deterministic_setup() {
     let mut enemy_2 = enemies.next().unwrap();
 
     assert_eq!(enemy_2.u32(..=10), 7);
+}
+
+#[cfg(feature = "chacha")]
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn deterministic_secure_setup() {
+    let mut app = App::new();
+
+    app.insert_resource(GlobalSecureRng::with_seed([1; 40]));
+
+    app.add_startup_system(setup_secure_player);
+    app.add_startup_system(setup_secure_enemies.after(setup_secure_player));
+
+    app.update();
+
+    let mut q_player = app
+        .world
+        .query_filtered::<&mut SecureRngComponent, With<Player>>();
+    let mut player = q_player.single_mut(&mut app.world);
+
+    assert_eq!(player.u32(..=10), 0);
+
+    let mut q_enemies = app.world.query_filtered::<&mut SecureRngComponent, With<Enemy>>();
+    let mut enemies = q_enemies.iter_mut(&mut app.world);
+
+    let mut enemy_1 = enemies.next().unwrap();
+
+    assert_eq!(enemy_1.u32(..=10), 3);
+
+    let mut enemy_2 = enemies.next().unwrap();
+
+    assert_eq!(enemy_2.u32(..=10), 9);
 }
 
 #[cfg(feature = "serialize")]
