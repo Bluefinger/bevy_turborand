@@ -251,14 +251,11 @@ impl Default for RngPlugin {
 impl Plugin for RngPlugin {
     fn build(&self, app: &mut App) {
         #[cfg(feature = "wyrand")]
-        app.insert_resource(
-            self.rng
-                .map_or_else(|| GlobalRng::new(), |seed| GlobalRng::with_seed(seed)),
-        );
+        app.insert_resource(self.rng.map_or_else(GlobalRng::new, GlobalRng::with_seed));
         #[cfg(feature = "chacha")]
-        app.insert_resource(self.secure.map_or_else(
-            || GlobalSecureRng::new(),
-            |seed| GlobalSecureRng::with_seed(seed),
-        ));
+        app.insert_resource(
+            self.secure
+                .map_or_else(GlobalSecureRng::new, GlobalSecureRng::with_seed),
+        );
     }
 }
