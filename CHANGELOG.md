@@ -8,7 +8,29 @@ All notable changes to this project will be documented in this file.
 
 - Prepare for release
 
-## [0.2.0] - 2022-07-23
+## [0.3.0] - 2022-08-19
+
+### Bug Fixes
+
+- Additional Miri flags to silence known behaviours from bevy
+- Fix import warning when building with no default features
+
+### Documentation
+
+- Provide updated docs for reworked traits and structs
+
+### Features
+
+- Traitification rework, Secure RNG, granular features
+
+### Miscellaneous Tasks
+
+- Clippy fixes
+- Enable Miri to run plus tests on secure Rng variants
+- Migrate to 0.6 turborand, prep docs and README
+- Complete intro sentence about ChaCha.
+
+## [0.2.0] - 2022-07-30
 
 ### Documentation
 
@@ -23,6 +45,7 @@ All notable changes to this project will be documented in this file.
 - Update README example
 - Upgrade turborand, fill_bytes method
 - Add CHANGELOG for releases
+- Prepare for release
 
 ### Refactor
 
