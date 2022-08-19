@@ -20,12 +20,13 @@ use crate::RandBorrowed;
 /// `&self` methods of [`TurboRand`].
 pub trait DelegatedRng
 where
-    Self::Source: Default + Debug + Clone + PartialEq + TurboCore + TurboRand + SeededCore,
+    Self::Source:
+        Default + Debug + Clone + PartialEq + TurboCore + GenCore + TurboRand + SeededCore,
 {
     /// The [`TurboCore`] instance that provides the RNG source for the trait. Sources need to implement
     /// [`Default`], [`Debug`] (ensuring it does not leak internal state), [`Clone`] and [`PartialEq`], as
-    /// well as [`SeededCore`]. [`TurboRand`] is an auto-trait, and is implemented automatically to anything
-    /// that implements [`TurboCore`].
+    /// well as [`SeededCore`] & [`GenCore`]. [`TurboRand`] is an auto-trait, and is implemented automatically
+    ///  to anything that implements [`TurboCore`].
     type Source;
 
     /// Returns the internal [`TurboRand`] reference. Useful
@@ -61,6 +62,7 @@ where
     /// Return a compatibility shim for working with crates from the `rand`
     /// ecosystem.
     #[cfg(feature = "rand")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "rand")))]
     #[inline]
     fn as_rand(&mut self) -> RandBorrowed<'_, Self::Source> {
         RandBorrowed::from(self.get_mut())
@@ -204,7 +206,7 @@ where
 
     /// Delegated [`TurboCore::fill_bytes`] method from [`TurboCore`].
     #[inline]
-    fn fill_bytes<B: AsMut<[u8]>>(&mut self, buffer: B) {
+    fn fill_bytes(&mut self, buffer: &mut [u8]) {
         self.get_mut().fill_bytes(buffer);
     }
 

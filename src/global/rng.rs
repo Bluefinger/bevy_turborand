@@ -4,6 +4,7 @@ use crate::*;
 /// created automatically with [`RngPlugin`], or can be created
 /// and added manually.
 #[derive(Debug)]
+#[cfg_attr(docsrs, doc(cfg(feature = "wyrand")))]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 pub struct GlobalRng(Rng);
 

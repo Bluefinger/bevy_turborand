@@ -3,12 +3,12 @@
 //! The plugin makes use of [`turborand`](https://docs.rs/turborand/latest/turborand/),
 //! on which the implementation uses [Wyrand](https://github.com/wangyi-fudan/wyhash),
 //! a simple and fast generator but **not** cryptographically secure, as well as
-//! [ChaCha8](https://cr.yp.to/chacha.html), a cryptographically secure generator tuned 
+//! [ChaCha8](https://cr.yp.to/chacha.html), a cryptographically secure generator tuned
 //! to 8 rounds of the ChaCha algorithm, for the purpose of increasing throughput at the
 //! expense of slightly less security (though plenty secure enough for cryptographic purposes).
 //!
-//! This plugin exposes [`GlobalRng`] & [`GlobalSecureRng`] for use as a `Resource`, 
-//! as well as [`RngComponent`] & [`SecureRngComponent`] for providing rng instances
+//! This plugin exposes [`GlobalRng`] & [`GlobalChaChaRng`] for use as a `Resource`,
+//! as well as [`RngComponent`] & [`ChaChaRngComponent`] for providing rng instances
 //! at a per-entity level. By exposing random number generation as a component allows
 //! for better parallelisation of systems making use of PRNG, as well as making it
 //! easier to enable determinism in an otherwise multi-threaded engine.
@@ -44,8 +44,8 @@
 //! in order to get the [`TurboCore`] instance itself. From there, all [`TurboRand`] methods in
 //! [`turborand`](https://docs.rs/turborand/latest/turborand/) are available to be
 //! used, though most are available as delegated methods in [`GlobalRng`] and
-//! [`RngComponent`]. The same applies to [`GlobalSecureRng`] and
-//! [`SecureRngComponent`].
+//! [`RngComponent`]. The same applies to [`GlobalChaChaRng`] and
+//! [`ChaChaRngComponent`].
 //!
 //! [`GlobalRng`] is provided as a means to seed [`RngComponent`] with randomised
 //! states, and should **not** be used as a direct source of entropy for
@@ -55,10 +55,10 @@
 //! provided in order to have all instances be deterministic, as long as all
 //! [`RngComponent`]s are created using [`GlobalRng`]. [`RngComponent`] can also
 //! be used to seed other [`RngComponent`]s.
-//! 
-//! **Note**: [`GlobalSecureRng`] & [`SecureRngComponent`] can seed both [`SecureRngComponent`]
+//!
+//! **Note**: [`GlobalChaChaRng`] & [`ChaChaRngComponent`] can seed both [`ChaChaRngComponent`]
 //! and [`RngComponent`]. However, [`GlobalRng`] & [`RngComponent`] cannot be used
-//! to seed [`SecureRngComponent`] as they don't implement [`SecureCore`].
+//! to seed [`ChaChaRngComponent`] as they don't implement [`SecureCore`].
 //! You can only seed from high quality to same quality entropy sources, but never from
 //! worse quality entropy sources.
 //!
@@ -135,12 +135,14 @@
 //!
 //! - **`wyrand`** - Enables [`GlobalRng`] & [`RngComponent`]. Is enabled by default.
 //!   Having this feature flag enabled also enables [`RngPlugin`].
-//! - **`chacha`** - Enables [`GlobalSecureRng`] & [`SecureRngComponent`]. Having this
+//! - **`chacha`** - Enables [`GlobalChaChaRng`] & [`ChaChaRngComponent`]. Having this
 //!   feature flag enabled also enables [`RngPlugin`].
 //! - **`rand`** - Provides [`RandBorrowed`], which implements `RngCore`
 //!   so to allow for compatibility with `rand` ecosystem of crates.
 //! - **`serialize`** - Enables [`Serialize`] and [`Deserialize`] derives.
 #![warn(missing_docs, rust_2018_idioms)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, allow(unused_attributes))]
 
 use bevy::prelude::*;
 #[cfg(any(feature = "chacha", feature = "wyrand"))]
@@ -150,14 +152,14 @@ pub use turborand::*;
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "chacha")]
+pub use component::chacha::*;
 #[cfg(feature = "wyrand")]
 pub use component::rng::*;
 #[cfg(feature = "chacha")]
-pub use component::secure::*;
+pub use global::chacha::*;
 #[cfg(feature = "wyrand")]
 pub use global::rng::*;
-#[cfg(feature = "chacha")]
-pub use global::secure::*;
 pub use traits::*;
 
 #[macro_use]
@@ -208,14 +210,28 @@ pub mod rng {
     pub use turborand::prelude::*;
 }
 
-/// A [`Plugin`] for initialising a [`GlobalRng`] & [`GlobalSecureRng`]
+/// A [`Plugin`] for initialising a [`GlobalRng`] & [`GlobalChaChaRng`]
 /// (if the feature flags are enabled for either of them) into a Bevy `App`.
+///
+/// # Example
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_turborand::*;
+///
+/// App::new()
+///     .add_plugin(RngPlugin::new().with_rng_seed(12345))
+///     .run();
+///
+/// ```
 #[cfg(any(feature = "wyrand", feature = "chacha"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "wyrand", feature = "chacha"))))]
 pub struct RngPlugin {
     #[cfg(feature = "wyrand")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "wyrand")))]
     rng: Option<u64>,
     #[cfg(feature = "chacha")]
-    secure: Option<[u8; 40]>,
+    #[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
+    chacha: Option<[u8; 40]>,
 }
 
 #[cfg(any(feature = "wyrand", feature = "chacha"))]
@@ -229,12 +245,13 @@ impl RngPlugin {
             #[cfg(feature = "wyrand")]
             rng: None,
             #[cfg(feature = "chacha")]
-            secure: None,
+            chacha: None,
         }
     }
 
     /// Builder function to set a seed value for a [`GlobalRng`].
     #[cfg(feature = "wyrand")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "wyrand")))]
     #[inline]
     #[must_use]
     pub const fn with_rng_seed(mut self, seed: u64) -> Self {
@@ -242,12 +259,13 @@ impl RngPlugin {
         self
     }
 
-    /// Builder function to set a seed value for a [`GlobalSecureRng`].
+    /// Builder function to set a seed value for a [`GlobalChaChaRng`].
     #[cfg(feature = "chacha")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
     #[inline]
     #[must_use]
-    pub const fn with_secure_seed(mut self, seed: [u8; 40]) -> Self {
-        self.secure = Some(seed);
+    pub const fn with_chacha_seed(mut self, seed: [u8; 40]) -> Self {
+        self.chacha = Some(seed);
         self
     }
 }
@@ -270,8 +288,8 @@ impl Plugin for RngPlugin {
         app.insert_resource(self.rng.map_or_else(GlobalRng::new, GlobalRng::with_seed));
         #[cfg(feature = "chacha")]
         app.insert_resource(
-            self.secure
-                .map_or_else(GlobalSecureRng::new, GlobalSecureRng::with_seed),
+            self.chacha
+                .map_or_else(GlobalChaChaRng::new, GlobalChaChaRng::with_seed),
         );
     }
 }

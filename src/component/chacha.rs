@@ -1,15 +1,15 @@
 use crate::*;
 
-/// A [`SecureRng`] component that wraps a random number generator,
-/// specifically the [`SecureRng`] struct, which provides a cryptographically
+/// A [`ChaChaRng`] component that wraps a random number generator,
+/// specifically the [`ChaChaRng`] struct, which provides a cryptographically
 /// secure source based on ChaCha8.
 ///
-/// # Creating new [`SecureRngComponent`]s.
+/// # Creating new [`ChaChaRngComponent`]s.
 ///
-/// You can creates a new  [`SecureRngComponent`] directly from anything that yields
+/// You can creates a new  [`ChaChaRngComponent`] directly from anything that yields
 /// a mut reference to a [`DelegatedRng`], such as [`ResMut`], or a
 /// [`Component`], or from a [`TurboCore`] source directly. You can't create or seed
-/// [`SecureRngComponent`] from sources that are not backed by a [`SecureCore`] source.
+/// [`ChaChaRngComponent`] from sources that are not backed by a [`SecureCore`] source.
 ///
 /// # Examples
 ///
@@ -21,11 +21,11 @@ use crate::*;
 /// #[derive(Debug, Component, Default)]
 /// struct Source;
 ///
-/// fn setup_source(mut commands: Commands, mut global: ResMut<GlobalSecureRng>) {
+/// fn setup_source(mut commands: Commands, mut global: ResMut<GlobalChaChaRng>) {
 ///     commands
 ///         .spawn()
 ///         .insert(Source)
-///         .insert(SecureRngComponent::from(&mut global));
+///         .insert(ChaChaRngComponent::from(&mut global));
 /// }
 /// ```
 ///
@@ -41,7 +41,7 @@ use crate::*;
 ///
 /// fn setup_enemies_from_source(
 ///    mut commands: Commands,
-///    mut q_source: Query<&mut SecureRngComponent, (With<Source>, Without<Enemy>)>,
+///    mut q_source: Query<&mut ChaChaRngComponent, (With<Source>, Without<Enemy>)>,
 /// ) {
 ///    let mut source = q_source.single_mut();
 ///
@@ -49,34 +49,35 @@ use crate::*;
 ///        commands
 ///            .spawn()
 ///            .insert(Enemy)
-///            .insert(SecureRngComponent::from(&mut source));
+///            .insert(ChaChaRngComponent::from(&mut source));
 ///    }
 /// }
 /// ```
 #[derive(Debug, Component)]
+#[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-pub struct SecureRngComponent(SecureRng);
+pub struct ChaChaRngComponent(ChaChaRng);
 
-unsafe impl Sync for SecureRngComponent {}
+unsafe impl Sync for ChaChaRngComponent {}
 
-impl SecureRngComponent {
-    /// Create a new [`SecureRngComponent`] with a randomised seed.
+impl ChaChaRngComponent {
+    /// Create a new [`ChaChaRngComponent`] with a randomised seed.
     #[inline]
     #[must_use]
     pub fn new() -> Self {
-        Self(SecureRng::new())
+        Self(ChaChaRng::new())
     }
 
-    /// Create a new [`SecureRngComponent`] with a given seed.
+    /// Create a new [`ChaChaRngComponent`] with a given seed.
     #[inline]
     #[must_use]
     pub fn with_seed(seed: [u8; 40]) -> Self {
-        Self(SecureRng::with_seed(seed))
+        Self(ChaChaRng::with_seed(seed))
     }
 }
 
-impl DelegatedRng for SecureRngComponent {
-    type Source = SecureRng;
+impl DelegatedRng for ChaChaRngComponent {
+    type Source = ChaChaRng;
 
     #[inline]
     fn get_mut(&mut self) -> &mut Self::Source {
@@ -84,8 +85,8 @@ impl DelegatedRng for SecureRngComponent {
     }
 }
 
-impl Default for SecureRngComponent {
-    /// Creates a default [`SecureRngComponent`] instance. The instance will
+impl Default for ChaChaRngComponent {
+    /// Creates a default [`ChaChaRngComponent`] instance. The instance will
     /// be initialised with a randomised seed, so this is **not**
     /// deterministic.
     #[inline]
@@ -94,43 +95,43 @@ impl Default for SecureRngComponent {
     }
 }
 
-impl<T: TurboCore + SecureCore> From<&T> for SecureRngComponent {
+impl<T: TurboCore + GenCore + SecureCore> From<&T> for ChaChaRngComponent {
     #[inline]
     #[must_use]
     fn from(rng: &T) -> Self {
-        Self(SecureRng::with_seed(rng.gen::<40>()))
+        Self(ChaChaRng::with_seed(rng.gen()))
     }
 }
 
-impl<T: DelegatedRng> From<&mut T> for SecureRngComponent
+impl<T: DelegatedRng> From<&mut T> for ChaChaRngComponent
 where
     <T as DelegatedRng>::Source: SecureCore,
 {
     #[inline]
     #[must_use]
     fn from(rng: &mut T) -> Self {
-        Self(SecureRng::with_seed(rng.get_mut().gen::<40>()))
+        Self(ChaChaRng::with_seed(rng.get_mut().gen()))
     }
 }
 
-impl<T: DelegatedRng> From<&mut Mut<'_, T>> for SecureRngComponent
+impl<T: DelegatedRng> From<&mut Mut<'_, T>> for ChaChaRngComponent
 where
     <T as DelegatedRng>::Source: SecureCore,
 {
     #[inline]
     #[must_use]
     fn from(rng: &mut Mut<'_, T>) -> Self {
-        Self(SecureRng::with_seed(rng.get_mut().gen::<40>()))
+        Self(ChaChaRng::with_seed(rng.get_mut().gen()))
     }
 }
 
-impl<T: DelegatedRng + Send + Sync + 'static> From<&mut ResMut<'_, T>> for SecureRngComponent
+impl<T: DelegatedRng + Send + Sync + 'static> From<&mut ResMut<'_, T>> for ChaChaRngComponent
 where
     <T as DelegatedRng>::Source: SecureCore,
 {
     #[inline]
     #[must_use]
     fn from(rng: &mut ResMut<'_, T>) -> Self {
-        Self(SecureRng::with_seed(rng.get_mut().gen::<40>()))
+        Self(ChaChaRng::with_seed(rng.get_mut().gen()))
     }
 }

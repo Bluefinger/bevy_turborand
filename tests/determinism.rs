@@ -51,20 +51,20 @@ fn setup_enemies(mut commands: Commands, mut global: ResMut<GlobalRng>) {
 }
 
 #[cfg(feature = "chacha")]
-fn setup_secure_player(mut commands: Commands, mut global: ResMut<GlobalSecureRng>) {
+fn setup_secure_player(mut commands: Commands, mut global: ResMut<GlobalChaChaRng>) {
     commands
         .spawn()
         .insert(Player)
-        .insert(SecureRngComponent::from(&mut global));
+        .insert(ChaChaRngComponent::from(&mut global));
 }
 
 #[cfg(feature = "chacha")]
-fn setup_secure_enemies(mut commands: Commands, mut global: ResMut<GlobalSecureRng>) {
+fn setup_secure_enemies(mut commands: Commands, mut global: ResMut<GlobalChaChaRng>) {
     for _ in 0..2 {
         commands
             .spawn()
             .insert(Enemy)
-            .insert(SecureRngComponent::from(&mut global));
+            .insert(ChaChaRngComponent::from(&mut global));
     }
 }
 
@@ -170,9 +170,9 @@ fn deterministic_play_through() {
 
     // Add the systems to our App. Order the necessary systems in order
     // to ensure deterministic behaviour.
-    app.add_system(attack_player);
-    app.add_system(attack_random_enemy);
-    app.add_system(buff_player.after(attack_random_enemy));
+    app.add_system(attack_player.label("player"));
+    app.add_system(attack_random_enemy.label("enemy"));
+    app.add_system(buff_player.after("enemy"));
 
     // Run the game once!
     app.update();
@@ -206,8 +206,8 @@ fn deterministic_setup() {
 
     app.insert_resource(GlobalRng::with_seed(23456));
 
-    app.add_startup_system(setup_player);
-    app.add_startup_system(setup_enemies.after(setup_player));
+    app.add_startup_system(setup_player.label("player"));
+    app.add_startup_system(setup_enemies.after("player"));
 
     app.update();
 
@@ -236,7 +236,7 @@ fn deterministic_setup() {
 fn deterministic_secure_setup() {
     let mut app = App::new();
 
-    app.insert_resource(GlobalSecureRng::with_seed([1; 40]));
+    app.insert_resource(GlobalChaChaRng::with_seed([1; 40]));
 
     app.add_startup_system(setup_secure_player);
     app.add_startup_system(setup_secure_enemies.after(setup_secure_player));
@@ -245,12 +245,14 @@ fn deterministic_secure_setup() {
 
     let mut q_player = app
         .world
-        .query_filtered::<&mut SecureRngComponent, With<Player>>();
+        .query_filtered::<&mut ChaChaRngComponent, With<Player>>();
     let mut player = q_player.single_mut(&mut app.world);
 
     assert_eq!(player.u32(..=10), 0);
 
-    let mut q_enemies = app.world.query_filtered::<&mut SecureRngComponent, With<Enemy>>();
+    let mut q_enemies = app
+        .world
+        .query_filtered::<&mut ChaChaRngComponent, With<Enemy>>();
     let mut enemies = q_enemies.iter_mut(&mut app.world);
 
     let mut enemy_1 = enemies.next().unwrap();
