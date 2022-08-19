@@ -7,7 +7,7 @@
 
 A plugin to enable random number generation for the Bevy game engine, built upon [`turborand`](https://github.com/Bluefinger/turborand). Implements ideas from Bevy's [Deterministic RNG RFC](https://github.com/bevyengine/rfcs/pull/55).
 
-`turborand`'s internal implementation uses [Wyrand](https://github.com/wangyi-fudan/wyhash), a simple and fast generator but **not** cryptographically secure, as well as 
+`turborand`'s internal implementation uses [Wyrand](https://github.com/wangyi-fudan/wyhash), a simple and fast generator but **not** cryptographically secure, as well as [ChaCha8](https://cr.yp.to/chacha.html), a cryptographically secure generator tuned to 8 rounds of the ChaCha algorithm for increased throughput without sacrificing too much security, as per the recommendations in the [Too Much Crypto](https://eprint.iacr.org/2019/1492.pdf) paper.
 
 ## Example
 
