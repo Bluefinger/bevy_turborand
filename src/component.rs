@@ -2,4 +2,4 @@
 pub mod rng;
 
 #[cfg(feature = "chacha")]
-pub mod secure;
+pub mod chacha;

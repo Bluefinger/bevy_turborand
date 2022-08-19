@@ -1,32 +1,33 @@
 use crate::*;
 
-/// A Global [`SecureRng`] instance, meant for use as a Resource. Gets
+/// A Global [`ChaChaRng`] instance, meant for use as a Resource. Gets
 /// created automatically with [`RngPlugin`], or can be created
 /// and added manually.
 #[derive(Debug)]
+#[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-pub struct GlobalSecureRng(SecureRng);
+pub struct GlobalChaChaRng(ChaChaRng);
 
-unsafe impl Sync for GlobalSecureRng {}
+unsafe impl Sync for GlobalChaChaRng {}
 
-impl GlobalSecureRng {
-    /// Create a new [`GlobalSecureRng`] instance with a randomised seed.
+impl GlobalChaChaRng {
+    /// Create a new [`GlobalChaChaRng`] instance with a randomised seed.
     #[inline]
     #[must_use]
     pub fn new() -> Self {
-        Self(SecureRng::new())
+        Self(ChaChaRng::new())
     }
 
-    /// Create a new [`GlobalSecureRng`] instance with a given seed.
+    /// Create a new [`GlobalChaChaRng`] instance with a given seed.
     #[inline]
     #[must_use]
     pub fn with_seed(seed: [u8; 40]) -> Self {
-        Self(SecureRng::with_seed(seed))
+        Self(ChaChaRng::with_seed(seed))
     }
 }
 
-impl DelegatedRng for GlobalSecureRng {
-    type Source = SecureRng;
+impl DelegatedRng for GlobalChaChaRng {
+    type Source = ChaChaRng;
 
     /// Returns the internal [`TurboRand`] reference. Useful
     /// for working directly with the internal [`TurboRand`], such as
@@ -38,7 +39,7 @@ impl DelegatedRng for GlobalSecureRng {
     /// use bevy_turborand::*;
     /// use std::iter::repeat_with;
     ///
-    /// fn contrived_random_actions(mut rand: ResMut<GlobalSecureRng>) {
+    /// fn contrived_random_actions(mut rand: ResMut<GlobalChaChaRng>) {
     ///     let rand = rand.get_mut(); // Important to shadow the rand mut reference into being an immutable `TurboRand` one.
     ///
     ///     // Now the `TurboRand` instance can be borrowed in multiple places in the iterator without issue.
@@ -53,8 +54,8 @@ impl DelegatedRng for GlobalSecureRng {
     }
 }
 
-impl Default for GlobalSecureRng {
-    /// Creates a default [`GlobalSecureRng`] instance. The instance will
+impl Default for GlobalChaChaRng {
+    /// Creates a default [`GlobalChaChaRng`] instance. The instance will
     /// be initialised with a randomised seed, so this is **not**
     /// deterministic.
     #[inline]
@@ -63,8 +64,8 @@ impl Default for GlobalSecureRng {
     }
 }
 
-impl AsMut<SecureRng> for GlobalSecureRng {
-    fn as_mut(&mut self) -> &mut SecureRng {
+impl AsMut<ChaChaRng> for GlobalChaChaRng {
+    fn as_mut(&mut self) -> &mut ChaChaRng {
         self.get_mut()
     }
 }

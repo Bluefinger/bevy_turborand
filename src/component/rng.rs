@@ -53,6 +53,7 @@ use crate::*;
 /// }
 /// ```
 #[derive(Debug, Component)]
+#[cfg_attr(docsrs, doc(cfg(feature = "wyrand")))]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 pub struct RngComponent(Rng);
 
@@ -93,7 +94,7 @@ impl Default for RngComponent {
     }
 }
 
-impl<T: TurboCore> From<&T> for RngComponent {
+impl<T: TurboCore + GenCore> From<&T> for RngComponent {
     #[inline]
     #[must_use]
     fn from(rng: &T) -> Self {
