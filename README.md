@@ -56,6 +56,12 @@ With `turborand` 0.6, there are a lot of breaking changes due to a rework of the
 - `RngPlugin` now uses a builder pattern to initialise. `new` creates a default state with no seeds applied, and then `with_rng_seed` and `with_chacha_seed` applies seed values to the plugin to then initialise the global RNG resources with. See the docs for an example of how that might look now.
 - `bevy_turborand` now has a number of feature flags, and apart from the new traits (which are alwways provided when no flags are enabled), everything else is behind a feature flag. For example, `wyrand` based structs (`RngComponent` et al) are behind the `wyrand` flag, which is enabled by default. For a higher quality entropy source (though it will be slower), `chacha` flag provides RNG provided by the ChaCha8 algorithm, such as `ChaChaRngComponent`. `RngPlugin` is available when either `wyrand` or `chacha` is enabled. Otherwise, existing flags like `rand` enable the rand crate compatibility layer, and `serialize` for serde derives.
 
+## Migration Guide from 0.3 to 0.4
+
+`bevy_turborand` moves to `turborand` 0.8, which rolls with a couple of major API breaking changes. Certain traits are no longer exposed as they are internal implementation details. The main changes are that `ChaChaRng` is no longer backed by a `Vec` for buffering entropy, switching to an aligned array for improving generation throughput at the slight cost of initialisation performance and struct size. It does mean no need for the single heap allocation however when the RNG generates a number for the first time. This refactor also changes how `ChaChaRng` is serialised, so `bevy_turborand` 0.4 is not compatible with previously serialised data.
+
+Also, the old `Clone` behaviour for `TurboCore` RNGs has been changed, so `.clone()` now maintains the state between original and cloned instances. The old behaviour now exists as the `ForkableCore` trait with the `.fork()` method, which has the original instance's state be mutated in order to derive a new random state for the forked instance. As such, `RngComponent` and `ChaChaRngComponent` can now implement `Clone`.
+
 ## License
 
 Licensed under either of

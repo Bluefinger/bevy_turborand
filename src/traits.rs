@@ -20,13 +20,20 @@ use crate::RandBorrowed;
 /// `&self` methods of [`TurboRand`].
 pub trait DelegatedRng
 where
-    Self::Source:
-        Default + Debug + Clone + PartialEq + TurboCore + GenCore + TurboRand + SeededCore,
+    Self::Source: Default
+        + Debug
+        + Clone
+        + PartialEq
+        + TurboCore
+        + GenCore
+        + TurboRand
+        + SeededCore
+        + ForkableCore,
 {
     /// The [`TurboCore`] instance that provides the RNG source for the trait. Sources need to implement
     /// [`Default`], [`Debug`] (ensuring it does not leak internal state), [`Clone`] and [`PartialEq`], as
-    /// well as [`SeededCore`] & [`GenCore`]. [`TurboRand`] is an auto-trait, and is implemented automatically
-    ///  to anything that implements [`TurboCore`].
+    /// well as [`SeededCore`], [`GenCore`] and [`ForkableCore`]. [`TurboRand`] is an auto-trait, and is
+    /// implemented automatically to anything that implements [`TurboCore`].
     type Source;
 
     /// Returns the internal [`TurboRand`] reference. Useful
@@ -52,10 +59,18 @@ where
     /// ```
     fn get_mut(&mut self) -> &mut Self::Source;
 
+    /// Forks the [`DelegatedRng`] source with a random seed/state, based on the original
+    /// source's seed. Delegated version of [`ForkableCore::fork`].
+    #[inline]
+    #[must_use]
+    fn fork(&mut self) -> Self::Source {
+        self.get_mut().fork()
+    }
+
     /// Reseeds the [`DelegatedRng`] with a new seed/state, resolving to the
     /// seed type of the underlying [`SeededCore`] instance.
     #[inline]
-    fn reseed(&mut self, seed: <<Self as DelegatedRng>::Source as SeededCore>::Seed) {
+    fn reseed(&mut self, seed: <Self::Source as SeededCore>::Seed) {
         self.get_mut().reseed(seed);
     }
 

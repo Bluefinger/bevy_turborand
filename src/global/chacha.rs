@@ -3,7 +3,7 @@ use crate::*;
 /// A Global [`ChaChaRng`] instance, meant for use as a Resource. Gets
 /// created automatically with [`RngPlugin`], or can be created
 /// and added manually.
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 #[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 pub struct GlobalChaChaRng(ChaChaRng);

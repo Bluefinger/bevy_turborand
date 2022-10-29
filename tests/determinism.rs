@@ -35,36 +35,24 @@ struct Player;
 struct Enemy;
 
 fn setup_player(mut commands: Commands, mut global: ResMut<GlobalRng>) {
-    commands
-        .spawn()
-        .insert(Player)
-        .insert(RngComponent::from(&mut global));
+    commands.spawn((Player, RngComponent::from(&mut global)));
 }
 
 fn setup_enemies(mut commands: Commands, mut global: ResMut<GlobalRng>) {
     for _ in 0..2 {
-        commands
-            .spawn()
-            .insert(Enemy)
-            .insert(RngComponent::from(&mut global));
+        commands.spawn((Enemy, RngComponent::from(&mut global)));
     }
 }
 
 #[cfg(feature = "chacha")]
 fn setup_secure_player(mut commands: Commands, mut global: ResMut<GlobalChaChaRng>) {
-    commands
-        .spawn()
-        .insert(Player)
-        .insert(ChaChaRngComponent::from(&mut global));
+    commands.spawn((Player, ChaChaRngComponent::from(&mut global)));
 }
 
 #[cfg(feature = "chacha")]
 fn setup_secure_enemies(mut commands: Commands, mut global: ResMut<GlobalChaChaRng>) {
     for _ in 0..2 {
-        commands
-            .spawn()
-            .insert(Enemy)
-            .insert(ChaChaRngComponent::from(&mut global));
+        commands.spawn((Enemy, ChaChaRngComponent::from(&mut global)));
     }
 }
 
@@ -123,49 +111,52 @@ fn deterministic_play_through() {
     let mut global_rng = GlobalRng::with_seed(12345);
 
     // Spawn the player
-    let mut player = world.spawn();
-    let player_id = player
-        .insert(Player)
-        .insert(HitPoints {
-            total: 100,
-            max: 100,
-        })
-        .insert(Attack {
-            min: 5,
-            max: 10,
-            hit: 0.6,
-        })
-        .insert(Buff {
-            min: 2,
-            max: 6,
-            chance: 0.10,
-        })
-        .insert(RngComponent::from(&mut global_rng))
+    let player = world
+        .spawn((
+            Player,
+            HitPoints {
+                total: 100,
+                max: 100,
+            },
+            Attack {
+                min: 5,
+                max: 10,
+                hit: 0.6,
+            },
+            Buff {
+                min: 2,
+                max: 6,
+                chance: 0.10,
+            },
+            RngComponent::from(&mut global_rng),
+        ))
         .id();
 
     // Spawn some enemies for the player to fight with
-    let mut enemy_1 = world.spawn();
-    let enemy_1_id = enemy_1
-        .insert(Enemy)
-        .insert(HitPoints { total: 20, max: 20 })
-        .insert(Attack {
-            min: 3,
-            max: 6,
-            hit: 0.5,
-        })
-        .insert(RngComponent::from(&mut global_rng))
+    let enemy_1 = world
+        .spawn((
+            Enemy,
+            HitPoints { total: 20, max: 20 },
+            Attack {
+                min: 3,
+                max: 6,
+                hit: 0.5,
+            },
+            RngComponent::from(&mut global_rng),
+        ))
         .id();
 
-    let mut enemy_2 = world.spawn();
-    let enemy_2_id = enemy_2
-        .insert(Enemy)
-        .insert(HitPoints { total: 20, max: 20 })
-        .insert(Attack {
-            min: 3,
-            max: 6,
-            hit: 0.5,
-        })
-        .insert(RngComponent::from(&mut global_rng))
+    let enemy_2 = world
+        .spawn((
+            Enemy,
+            HitPoints { total: 20, max: 20 },
+            Attack {
+                min: 3,
+                max: 6,
+                hit: 0.5,
+            },
+            RngComponent::from(&mut global_rng),
+        ))
         .id();
 
     // Add the systems to our App. Order the necessary systems in order
@@ -178,25 +169,25 @@ fn deterministic_play_through() {
     app.update();
 
     // Check to see the health of our combatants
-    assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 100);
-    assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 20);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 11);
+    assert_eq!(app.world.get::<HitPoints>(player).unwrap().total, 100);
+    assert_eq!(app.world.get::<HitPoints>(enemy_1).unwrap().total, 20);
+    assert_eq!(app.world.get::<HitPoints>(enemy_2).unwrap().total, 11);
 
     // Again!
     app.update();
 
     // Player OP. Enemy 2 is in trouble
-    assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 90);
-    assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 20);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 3);
+    assert_eq!(app.world.get::<HitPoints>(player).unwrap().total, 90);
+    assert_eq!(app.world.get::<HitPoints>(enemy_1).unwrap().total, 20);
+    assert_eq!(app.world.get::<HitPoints>(enemy_2).unwrap().total, 3);
 
     // And again!
     app.update();
 
     // Enemy 2 is now deceased
-    assert_eq!(app.world.get::<HitPoints>(player_id).unwrap().total, 88);
-    assert_eq!(app.world.get::<HitPoints>(enemy_1_id).unwrap().total, 20);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2_id).unwrap().total, 0);
+    assert_eq!(app.world.get::<HitPoints>(player).unwrap().total, 88);
+    assert_eq!(app.world.get::<HitPoints>(enemy_1).unwrap().total, 20);
+    assert_eq!(app.world.get::<HitPoints>(enemy_2).unwrap().total, 0);
 }
 
 #[test]
