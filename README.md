@@ -19,9 +19,10 @@ use bevy_turborand::*;
 struct Player;
 
 fn setup_player(mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
-    commands.spawn()
-        .insert(Player)
-        .insert(RngComponent::from_global(&mut global_rng));
+    commands.spawn((
+        Player,
+        RngComponent::from_global(&mut global_rng)
+    ));
 }
 
 fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
