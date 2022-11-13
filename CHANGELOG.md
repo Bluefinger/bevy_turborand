@@ -8,6 +8,22 @@ All notable changes to this project will be documented in this file.
 
 - Prepare for release
 
+## [0.4.0] - 2022-11-13
+
+### Bug Fixes
+
+- Limit tags to 5
+- Properly enable serde dep
+
+### Features
+
+- Add ForkableCore trait and update to latest bevy
+
+### Miscellaneous Tasks
+
+- Update example
+- Update to latest bevy version
+
 ## [0.3.0] - 2022-08-19
 
 ### Bug Fixes
@@ -29,6 +45,7 @@ All notable changes to this project will be documented in this file.
 - Enable Miri to run plus tests on secure Rng variants
 - Migrate to 0.6 turborand, prep docs and README
 - Complete intro sentence about ChaCha.
+- Prepare for release
 
 ## [0.2.0] - 2022-07-30
 
