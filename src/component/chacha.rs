@@ -23,9 +23,10 @@ use crate::*;
 ///
 /// fn setup_source(mut commands: Commands, mut global: ResMut<GlobalChaChaRng>) {
 ///     commands
-///         .spawn()
-///         .insert(Source)
-///         .insert(ChaChaRngComponent::from(&mut global));
+///         .spawn((
+///             Source,
+///             ChaChaRngComponent::from(&mut global)
+///         ));
 /// }
 /// ```
 ///
@@ -47,13 +48,14 @@ use crate::*;
 ///
 ///    for _ in 0..2 {
 ///        commands
-///            .spawn()
-///            .insert(Enemy)
-///            .insert(ChaChaRngComponent::from(&mut source));
+///            .spawn((
+///                 Enemy,
+///                 ChaChaRngComponent::from(&mut source),
+///             ));
 ///    }
 /// }
 /// ```
-#[derive(Debug, Component)]
+#[derive(Debug, Clone, Component)]
 #[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 pub struct ChaChaRngComponent(ChaChaRng);
@@ -80,6 +82,7 @@ impl DelegatedRng for ChaChaRngComponent {
     type Source = ChaChaRng;
 
     #[inline]
+    #[must_use]
     fn get_mut(&mut self) -> &mut Self::Source {
         &mut self.0
     }
@@ -105,7 +108,7 @@ impl<T: TurboCore + GenCore + SecureCore> From<&T> for ChaChaRngComponent {
 
 impl<T: DelegatedRng> From<&mut T> for ChaChaRngComponent
 where
-    <T as DelegatedRng>::Source: SecureCore,
+    T::Source: SecureCore,
 {
     #[inline]
     #[must_use]
@@ -116,7 +119,7 @@ where
 
 impl<T: DelegatedRng> From<&mut Mut<'_, T>> for ChaChaRngComponent
 where
-    <T as DelegatedRng>::Source: SecureCore,
+    T::Source: SecureCore,
 {
     #[inline]
     #[must_use]
@@ -125,9 +128,10 @@ where
     }
 }
 
-impl<T: DelegatedRng + Send + Sync + 'static> From<&mut ResMut<'_, T>> for ChaChaRngComponent
+impl<T: DelegatedRng + Resource + Send + Sync + 'static> From<&mut ResMut<'_, T>>
+    for ChaChaRngComponent
 where
-    <T as DelegatedRng>::Source: SecureCore,
+    T::Source: SecureCore,
 {
     #[inline]
     #[must_use]

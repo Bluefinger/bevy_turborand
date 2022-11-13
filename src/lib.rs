@@ -74,9 +74,10 @@
 //! struct Player;
 //!
 //! fn setup_player(mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
-//!     commands.spawn()
-//!         .insert(Player)
-//!         .insert(RngComponent::from(&mut global_rng));
+//!     commands.spawn((
+//!             Player,
+//!             RngComponent::from(&mut global_rng),
+//!         ));
 //! }
 //!
 //! fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
@@ -147,7 +148,7 @@
 use bevy::prelude::*;
 #[cfg(any(feature = "chacha", feature = "wyrand"))]
 use turborand::prelude::*;
-pub use turborand::*;
+pub use turborand::{ForkableCore, GenCore, SecureCore, SeededCore, TurboCore, TurboRand};
 
 #[cfg(feature = "serialize")]
 use serde::{Deserialize, Serialize};

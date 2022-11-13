@@ -22,9 +22,10 @@ use crate::*;
 ///
 /// fn setup_source(mut commands: Commands, mut global: ResMut<GlobalRng>) {
 ///     commands
-///         .spawn()
-///         .insert(Source)
-///         .insert(RngComponent::from(&mut global));
+///         .spawn((
+///             Source,
+///             RngComponent::from(&mut global),
+///         ));
 /// }
 /// ```
 ///
@@ -46,13 +47,14 @@ use crate::*;
 ///
 ///    for _ in 0..2 {
 ///        commands
-///            .spawn()
-///            .insert(Enemy)
-///            .insert(RngComponent::from(&mut source));
+///            .spawn((
+///                Enemy,
+///                RngComponent::from(&mut source)
+///            ));
 ///    }
 /// }
 /// ```
-#[derive(Debug, Component)]
+#[derive(Debug, Clone, Component)]
 #[cfg_attr(docsrs, doc(cfg(feature = "wyrand")))]
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 pub struct RngComponent(Rng);
@@ -79,6 +81,7 @@ impl DelegatedRng for RngComponent {
     type Source = Rng;
 
     #[inline]
+    #[must_use]
     fn get_mut(&mut self) -> &mut Self::Source {
         &mut self.0
     }
@@ -118,7 +121,7 @@ impl<T: DelegatedRng> From<&mut Mut<'_, T>> for RngComponent {
     }
 }
 
-impl<T: DelegatedRng + Send + Sync + 'static> From<&mut ResMut<'_, T>> for RngComponent {
+impl<T: DelegatedRng + Resource + Send + Sync + 'static> From<&mut ResMut<'_, T>> for RngComponent {
     #[inline]
     #[must_use]
     fn from(rng: &mut ResMut<'_, T>) -> Self {
