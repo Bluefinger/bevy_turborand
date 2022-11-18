@@ -85,6 +85,17 @@ impl DelegatedRng for RngComponent {
     fn get_mut(&mut self) -> &mut Self::Source {
         &mut self.0
     }
+
+    #[inline]
+    fn weighted_sample_mut<'a, T, F>(
+        &'a mut self,
+        list: &'a mut [T],
+        weight_sampler: F,
+    ) -> Option<&'a mut T>
+    where
+        F: Fn(&T) -> f64 {
+        self.0.weighted_sample_mut(list, weight_sampler)
+    }
 }
 
 impl Default for RngComponent {
