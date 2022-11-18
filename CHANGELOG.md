@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 
 - Prepare for release
 
+## [0.4.1] - 2022-11-18
+
+### Features
+
+- *_mut sampling methods
+
 ## [0.4.0] - 2022-11-13
 
 ### Bug Fixes
@@ -23,6 +29,7 @@ All notable changes to this project will be documented in this file.
 
 - Update example
 - Update to latest bevy version
+- Prepare for release
 
 ## [0.3.0] - 2022-08-19
 
