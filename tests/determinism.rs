@@ -1,7 +1,7 @@
 #![allow(clippy::type_complexity)]
 
 use bevy::prelude::*;
-use bevy_turborand::*;
+use bevy_turborand::prelude::*;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::*;
