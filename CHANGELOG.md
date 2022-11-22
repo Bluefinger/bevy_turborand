@@ -8,6 +8,17 @@ All notable changes to this project will be documented in this file.
 
 - Prepare for release
 
+## [0.4.2] - 2022-11-22
+
+### Documentation
+
+- Use prelude in examples
+
+### Miscellaneous Tasks
+
+- Prepare for release
+- Add prelude module
+
 ## [0.4.1] - 2022-11-18
 
 ### Features
