@@ -13,7 +13,7 @@ A plugin to enable random number generation for the Bevy game engine, built upon
 
 ```rust
 use bevy::prelude::*;
-use bevy_turborand::*;
+use bevy_turborand::prelude::*;
 
 #[derive(Debug, Component)]
 struct Player;

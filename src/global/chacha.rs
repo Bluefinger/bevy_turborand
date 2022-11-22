@@ -36,7 +36,7 @@ impl DelegatedRng for GlobalChaChaRng {
     /// # Example
     /// ```
     /// use bevy::prelude::*;
-    /// use bevy_turborand::*;
+    /// use bevy_turborand::prelude::*;
     /// use std::iter::repeat_with;
     ///
     /// fn contrived_random_actions(mut rand: ResMut<GlobalChaChaRng>) {

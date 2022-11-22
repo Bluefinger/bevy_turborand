@@ -16,7 +16,7 @@ use crate::*;
 /// From a resource:
 /// ```
 /// use bevy::prelude::*;
-/// use bevy_turborand::*;
+/// use bevy_turborand::prelude::*;
 ///
 /// #[derive(Debug, Component, Default)]
 /// struct Source;
@@ -33,7 +33,7 @@ use crate::*;
 /// From a component:
 /// ```
 /// use bevy::prelude::*;
-/// use bevy_turborand::*;
+/// use bevy_turborand::prelude::*;
 ///
 /// #[derive(Debug, Component, Default)]
 /// struct Enemy;

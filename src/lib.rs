@@ -68,7 +68,7 @@
 //!
 //! ```
 //! use bevy::prelude::*;
-//! use bevy_turborand::*;
+//! use bevy_turborand::prelude::*;
 //!
 //! #[derive(Debug, Component)]
 //! struct Player;

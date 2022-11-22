@@ -43,7 +43,7 @@ where
     /// # Example
     /// ```
     /// use bevy::prelude::*;
-    /// use bevy_turborand::*;
+    /// use bevy_turborand::prelude::*;
     /// use std::iter::repeat_with;
     ///
     /// fn contrived_random_actions(mut q_rand: Query<&mut RngComponent>) {

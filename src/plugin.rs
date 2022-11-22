@@ -6,7 +6,7 @@ use crate::*;
 /// # Example
 /// ```
 /// use bevy::prelude::*;
-/// use bevy_turborand::*;
+/// use bevy_turborand::prelude::*;
 ///
 /// App::new()
 ///     .add_plugin(RngPlugin::new().with_rng_seed(12345))
