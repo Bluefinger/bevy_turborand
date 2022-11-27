@@ -21,7 +21,7 @@ struct Player;
 fn setup_player(mut commands: Commands, mut global_rng: ResMut<GlobalRng>) {
     commands.spawn((
         Player,
-        RngComponent::from_global(&mut global_rng)
+        RngComponent::from(&mut global_rng)
     ));
 }
 
