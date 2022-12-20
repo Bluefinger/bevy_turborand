@@ -48,6 +48,17 @@ Systems also must be ordered correctly for determinism to occur. Systems however
 
 To see an example of this, view the [project's tests](tests/determinism.rs) to see how to make use of determinism for testing random systems.
 
+## Supported Versions
+
+| `bevy_turborand` | `bevy` |
+|------------------|--------|
+| v0.4             | v0.9   |
+| v0.3             | v0.8   |
+| v0.2             | v0.7   |
+| v0.1             | v0.6   |
+
+MSRV for `bevy_turborand` is the same as in `bevy`, so always the latest Rust compiler version.
+
 ## Migration Guide from 0.2 to 0.3
 
 With `turborand` 0.6, there are a lot of breaking changes due to a rework of the API. For the most part, this is mostly internal to `turborand` and `bevy_turborand` exposes the new traits by default, so any existing code should more or less work fine, except for the following:
