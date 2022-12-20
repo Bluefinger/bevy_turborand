@@ -2,9 +2,13 @@
 
 ### Chore
 
-- Prepare release
+- Fix support versions table
 
 ## [0.4.3] - 2022-12-20
+
+### Chore
+
+- Prepare release
 
 ### Feat
 
