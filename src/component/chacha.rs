@@ -55,10 +55,14 @@ use crate::*;
 ///    }
 /// }
 /// ```
-#[derive(Debug, Clone, Component)]
+#[derive(Debug, Clone, Component, PartialEq)]
 #[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
-#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-pub struct ChaChaRngComponent(ChaChaRng);
+#[cfg_attr(
+    feature = "serialize",
+    derive(Reflect, FromReflect, Serialize, Deserialize)
+)]
+#[reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)]
+pub struct ChaChaRngComponent(#[reflect(default)] ChaChaRng);
 
 unsafe impl Sync for ChaChaRngComponent {}
 
@@ -94,7 +98,8 @@ impl DelegatedRng for ChaChaRngComponent {
         weight_sampler: F,
     ) -> Option<&'a mut T>
     where
-        F: Fn(&T) -> f64 {
+        F: Fn(&T) -> f64,
+    {
         self.0.weighted_sample_mut(list, weight_sampler)
     }
 }

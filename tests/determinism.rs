@@ -259,9 +259,104 @@ fn deterministic_secure_setup() {
 #[test]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn load_rng_setup() {
-    let payload = "{\"state\":24691}";
+    let payload = "(((state:(24691))))";
 
-    let mut rng: RngComponent = serde_json::from_str(payload).unwrap();
+    let mut rng: RngComponent = ron::from_str(payload).unwrap();
 
     assert_eq!(rng.u32(..10), 4);
+}
+
+#[cfg(all(feature = "serialize", feature = "chacha"))]
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn load_chacha_rng_setup() {
+    let payload = "(((state:(1634760805,857760878,2036477234,1797285236,117901063,117901063,117901063,117901063,117901063,117901063,117901063,117901063,0,0,117901063,117901063),cache:(0,0,0,0,0,0,0,0,64))))";
+
+    let mut rng: ChaChaRngComponent = ron::from_str(payload).unwrap();
+
+    assert_eq!(rng.u32(..10), 0);
+}
+
+#[cfg(feature = "serialize")]
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn rng_reflection() {
+    use bevy::reflect::{
+        serde::{ReflectSerializer, UntypedReflectDeserializer},
+        TypeRegistryInternal,
+    };
+    use ron::ser::to_string;
+    use serde::de::DeserializeSeed;
+
+    let mut registry = TypeRegistryInternal::default();
+    registry.register::<RngComponent>();
+
+    let mut val = RngComponent::with_seed(7);
+
+    let ser = ReflectSerializer::new(&val, &registry);
+
+    let serialized = to_string(&ser).unwrap();
+
+    assert_eq!(
+        &serialized,
+        "{\"bevy_turborand::component::rng::RngComponent\":(((state:(15))))}"
+    );
+
+    let mut deserializer = ron::Deserializer::from_str(&serialized).unwrap();
+
+    let de = UntypedReflectDeserializer::new(&registry);
+
+    let value = de.deserialize(&mut deserializer).unwrap();
+
+    let mut dynamic = value.take::<RngComponent>().unwrap();
+
+    assert_eq!(val.get_mut(), dynamic.get_mut());
+
+    dynamic.u64(..);
+
+    assert_ne!(val.get_mut(), dynamic.get_mut());
+}
+
+#[cfg(all(feature = "serialize", feature = "chacha"))]
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn chacha_rng_reflection() {
+    use bevy::reflect::{
+        serde::{ReflectSerializer, UntypedReflectDeserializer},
+        TypeRegistryInternal,
+    };
+    use serde::de::DeserializeSeed;
+
+    let mut registry = TypeRegistryInternal::default();
+    registry.register::<ChaChaRngComponent>();
+
+    let mut val = ChaChaRngComponent::with_seed([7; 40]);
+
+    let ser = ReflectSerializer::new(&val, &registry);
+
+    let serialized = ron::ser::to_string_pretty(&ser, ron::ser::PrettyConfig::default()).unwrap();
+
+    assert_eq!(
+        &serialized,
+        r#"{
+    "bevy_turborand::component::chacha::ChaChaRngComponent": (((
+        state: (1634760805, 857760878, 2036477234, 1797285236, 117901063, 117901063, 117901063, 117901063, 117901063, 117901063, 117901063, 117901063, 0, 0, 117901063, 117901063),
+        cache: (0, 0, 0, 0, 0, 0, 0, 0, 64),
+    ))),
+}"#
+    );
+
+    let mut deserializer = ron::Deserializer::from_str(&serialized).unwrap();
+
+    let de = UntypedReflectDeserializer::new(&registry);
+
+    let value = de.deserialize(&mut deserializer).unwrap();
+
+    let mut dynamic = value.take::<ChaChaRngComponent>().unwrap();
+
+    assert_eq!(val.get_mut(), dynamic.get_mut());
+
+    dynamic.u64(..);
+
+    assert_ne!(val.get_mut(), dynamic.get_mut());
 }
