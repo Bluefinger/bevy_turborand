@@ -3,10 +3,14 @@ use crate::*;
 /// A Global [`Rng`] instance, meant for use as a Resource. Gets
 /// created automatically with [`RngPlugin`], or can be created
 /// and added manually.
-#[derive(Debug, Resource)]
+#[derive(Debug, Clone, Resource, PartialEq)]
 #[cfg_attr(docsrs, doc(cfg(feature = "wyrand")))]
-#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
-pub struct GlobalRng(Rng);
+#[cfg_attr(
+    feature = "serialize",
+    derive(Reflect, FromReflect, Serialize, Deserialize)
+)]
+#[reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)]
+pub struct GlobalRng(#[reflect(default)] Rng);
 
 unsafe impl Sync for GlobalRng {}
 
