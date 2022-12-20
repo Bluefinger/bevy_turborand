@@ -334,7 +334,11 @@ fn chacha_rng_reflection() {
 
     let ser = ReflectSerializer::new(&val, &registry);
 
-    let serialized = ron::ser::to_string_pretty(&ser, ron::ser::PrettyConfig::default()).unwrap();
+    let serialized = ron::ser::to_string_pretty(
+        &ser,
+        ron::ser::PrettyConfig::new().new_line(String::from("\n")),
+    )
+    .unwrap();
 
     assert_eq!(
         &serialized,
