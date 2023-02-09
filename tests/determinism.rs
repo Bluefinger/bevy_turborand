@@ -161,9 +161,9 @@ fn deterministic_play_through() {
 
     // Add the systems to our App. Order the necessary systems in order
     // to ensure deterministic behaviour.
-    app.add_system(attack_player.label("player"));
-    app.add_system(attack_random_enemy.label("enemy"));
-    app.add_system(buff_player.after("enemy"));
+    app.add_system(attack_player);
+    app.add_system(attack_random_enemy);
+    app.add_system(buff_player.after(attack_player));
 
     // Run the game once!
     app.update();
@@ -197,8 +197,8 @@ fn deterministic_setup() {
 
     app.insert_resource(GlobalRng::with_seed(23456));
 
-    app.add_startup_system(setup_player.label("player"));
-    app.add_startup_system(setup_enemies.after("player"));
+    app.add_startup_system(setup_player);
+    app.add_startup_system(setup_enemies.after(setup_player));
 
     app.update();
 
@@ -248,11 +248,11 @@ fn deterministic_secure_setup() {
 
     let mut enemy_1 = enemies.next().unwrap();
 
-    assert_eq!(enemy_1.u32(..=10), 3);
+    assert_eq!(enemy_1.u32(..=10), 6);
 
     let mut enemy_2 = enemies.next().unwrap();
 
-    assert_eq!(enemy_2.u32(..=10), 9);
+    assert_eq!(enemy_2.u32(..=10), 3);
 }
 
 #[cfg(feature = "serialize")]

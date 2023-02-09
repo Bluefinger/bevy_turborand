@@ -2,6 +2,8 @@ use crate::*;
 
 /// A [`Plugin`] for initialising a [`GlobalRng`] & [`GlobalChaChaRng`]
 /// (if the feature flags are enabled for either of them) into a Bevy `App`.
+/// Also registers the types for reflection support if `serialize` feature flag
+/// is enabled.
 ///
 /// # Example
 /// ```
@@ -70,8 +72,17 @@ impl Default for RngPlugin {
 
 impl Plugin for RngPlugin {
     fn build(&self, app: &mut App) {
+        #[cfg(all(feature = "wyrand", feature = "serialize"))]
+        app.register_type::<RngComponent>()
+            .register_type::<GlobalRng>();
+
         #[cfg(feature = "wyrand")]
         app.insert_resource(self.rng.map_or_else(GlobalRng::new, GlobalRng::with_seed));
+
+        #[cfg(all(feature = "chacha", feature = "serialize"))]
+        app.register_type::<ChaChaRngComponent>()
+            .register_type::<GlobalChaChaRng>();
+
         #[cfg(feature = "chacha")]
         app.insert_resource(
             self.chacha

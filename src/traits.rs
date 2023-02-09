@@ -156,6 +156,12 @@ where
         "Delegated [`TurboRand::isize`] method from [`TurboRand`]."
     );
     delegate_rng_trait!(
+        index,
+        usize,
+        impl RangeBounds<usize>,
+        "Delegated [`TurboRand::index`] method from [`TurboRand`]."
+    );
+    delegate_rng_trait!(
         chance,
         bool,
         f64,
@@ -231,10 +237,26 @@ where
         self.get_mut().shuffle(slice);
     }
 
+    /// Delegated [`TurboRand::partial_shuffle`] method from [`TurboRand`].
+    #[inline]
+    fn partial_shuffle<'a, T>(
+        &mut self,
+        slice: &'a mut [T],
+        amount: usize,
+    ) -> (&'a mut [T], &'a mut [T]) {
+        self.get_mut().partial_shuffle(slice, amount)
+    }
+
     /// Delegated [`TurboRand::sample`] method from [`TurboRand`].
     #[inline]
     fn sample<'a, T>(&mut self, list: &'a [T]) -> Option<&'a T> {
         self.get_mut().sample(list)
+    }
+
+    /// Delegated [`TurboRand::sample_iter`] method from [`TurboRand`].
+    #[inline]
+    fn sample_iter<T: Iterator>(&mut self, list: T) -> Option<T::Item> {
+        self.get_mut().sample_iter(list)
     }
 
     /// Delegated [`TurboRand::sample_mut`] method from [`TurboRand`].
@@ -249,6 +271,12 @@ where
         self.get_mut().sample_multiple(list, amount)
     }
 
+    /// Delegated [`TurboRand::sample_multiple_iter`] method from [`TurboRand`].
+    #[inline]
+    fn sample_multiple_iter<T: Iterator>(&mut self, list: T, amount: usize) -> Vec<T::Item> {
+        self.get_mut().sample_multiple_iter(list, amount)
+    }
+
     /// Delegated [`TurboRand::sample_multiple_mut`] method from [`TurboRand`].
     #[inline]
     fn sample_multiple_mut<'a, T>(&mut self, list: &'a mut [T], amount: usize) -> Vec<&'a mut T> {
@@ -259,17 +287,21 @@ where
     #[inline]
     fn weighted_sample<'a, T, F>(&mut self, list: &'a [T], weight_sampler: F) -> Option<&'a T>
     where
-        F: Fn(&'a T) -> f64,
+        F: Fn((&T, usize)) -> f64,
     {
         self.get_mut().weighted_sample(list, weight_sampler)
     }
 
     /// Delegated [`TurboRand::weighted_sample_mut`] method from [`TurboRand`].
+    #[inline]
     fn weighted_sample_mut<'a, T, F>(
-        &'a mut self,
+        &mut self,
         list: &'a mut [T],
         weight_sampler: F,
     ) -> Option<&'a mut T>
     where
-        F: Fn(&T) -> f64;
+        F: Fn((&T, usize)) -> f64,
+    {
+        self.get_mut().weighted_sample_mut(list, weight_sampler)
+    }
 }
