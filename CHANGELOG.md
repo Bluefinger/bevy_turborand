@@ -2,13 +2,24 @@
 
 ### Chore
 
-- Fix support versions table
+- Prepare release
+
+## [0.5.0] - 2023-03-06
+
+### Chore
+
+- Update to latest bevy version
+
+### Feat
+
+- Updated to stable indexing release of Turborand
 
 ## [0.4.3] - 2022-12-20
 
 ### Chore
 
 - Prepare release
+- Fix support versions table
 
 ### Feat
 

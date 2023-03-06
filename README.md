@@ -74,6 +74,12 @@ With `turborand` 0.6, there are a lot of breaking changes due to a rework of the
 
 Also, the old `Clone` behaviour for `TurboCore` RNGs has been changed, so `.clone()` now maintains the state between original and cloned instances. The old behaviour now exists as the `ForkableCore` trait with the `.fork()` method, which has the original instance's state be mutated in order to derive a new random state for the forked instance. As such, `RngComponent` and `ChaChaRngComponent` can now implement `Clone`.
 
+## Migration Guide from 0.4 to 0.5
+
+`bevy_turborand` moves to `turborand` 0.10, which introduces a few more sample/sample_multiple methods for supporting iterators, `partial_shuffle` and the major change regarding stable indexing, with sample/shuffle methods using the new `index` method. `index` allows for sampling to be stable across platforms, though it is currently optimised for 64-bit systems. All sampling/shuffling methods now make use of `index`, so this means `bevy_turborand` will be deterministic across different platforms, such as having the same output for `wasm32` and `x86-64`. The only method that doesn't benefit from this is `usize`.
+
+`ChaChaRngComponent` also now has a different output due to a change of the internal `ChaChaRng` source, which also changes how it gets serialised.
+
 ## License
 
 Licensed under either of
