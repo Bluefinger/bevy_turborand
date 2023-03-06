@@ -11,8 +11,25 @@ use crate::*;
 /// [`Component`], or from a [`TurboCore`] source directly.
 ///
 /// # Examples
+/// 
+/// Randomised Component:
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_turborand::prelude::*;
 ///
-/// From a resource:
+/// #[derive(Debug, Component, Default)]
+/// struct Source;
+///
+/// fn setup_source(mut commands: Commands) {
+///     commands
+///         .spawn((
+///             Source,
+///             RngComponent::new(),
+///         ));
+/// }
+/// ```
+///
+/// Seeded from a resource:
 /// ```
 /// use bevy::prelude::*;
 /// use bevy_turborand::prelude::*;
@@ -29,7 +46,7 @@ use crate::*;
 /// }
 /// ```
 ///
-/// From a component:
+/// Seeded from a component:
 /// ```
 /// use bevy::prelude::*;
 /// use bevy_turborand::prelude::*;
@@ -88,18 +105,6 @@ impl DelegatedRng for RngComponent {
     #[must_use]
     fn get_mut(&mut self) -> &mut Self::Source {
         &mut self.0
-    }
-
-    #[inline]
-    fn weighted_sample_mut<'a, T, F>(
-        &'a mut self,
-        list: &'a mut [T],
-        weight_sampler: F,
-    ) -> Option<&'a mut T>
-    where
-        F: Fn(&T) -> f64,
-    {
-        self.0.weighted_sample_mut(list, weight_sampler)
     }
 }
 

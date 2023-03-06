@@ -122,15 +122,17 @@
 //!
 //! # Caveats about Determinism
 //!
-//! Any [`TurboRand`] method that relies on `usize` will not exhibit the same result
-//! on 64-bit systems and 32-bit systems. The [`TurboRand`] output will be different
+//! Usage of the [`TurboRand`] method [`TurboRand::usize`] will not exhibit the same result
+//! on 64-bit systems and 32-bit systems. The method output will be different
 //! on those platforms, though it will be deterministically different. This is
 //! because the output of the RNG source for usize on 32-bit platforms
 //! is `u32` and thus is truncating the full output from the generator.
 //! As such, it will not be the same value between 32-bit and 64-bit platforms.
-//!
-//! Methods that are susceptible to this are [`TurboRand::usize`], [`TurboRand::sample`],
-//! [`TurboRand::sample_multiple`], [`TurboRand::weighted_sample`] and [`TurboRand::shuffle`].
+//! 
+//! For ensuring stable results between 32-bit and 64-bit platforms, use the [`TurboRand::index`]
+//! method instead. All sampling/shuffing methods use this method internally to ensure
+//! stable results. Do note, [`TurboRand`] optimises cases for 64-bit platforms,
+//! as these are much more common for general and game applications.
 //!
 //! # Features
 //!
