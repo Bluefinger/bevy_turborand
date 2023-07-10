@@ -3,13 +3,14 @@ use crate::*;
 /// A Global [`ChaChaRng`] instance, meant for use as a Resource. Gets
 /// created automatically with [`RngPlugin`], or can be created
 /// and added manually.
-#[derive(Debug, Clone, Resource, PartialEq)]
+#[derive(Debug, Clone, Resource, PartialEq, Reflect)]
 #[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 #[cfg_attr(
     feature = "serialize",
-    derive(Reflect, FromReflect, Serialize, Deserialize)
+    reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)
 )]
-#[reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(not(feature = "serialize"), reflect_value(Debug, PartialEq, Default))]
 pub struct GlobalChaChaRng(#[reflect(default)] ChaChaRng);
 
 unsafe impl Sync for GlobalChaChaRng {}

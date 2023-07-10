@@ -88,9 +88,9 @@
 //!
 //! fn main() {
 //!     App::new()
-//!         .add_plugin(RngPlugin::default())
-//!         .add_startup_system(setup_player)
-//!         .add_system(do_damage)
+//!         .add_plugins(RngPlugin::default())
+//!         .add_systems(Startup, setup_player)
+//!         .add_systems(Update, do_damage)
 //!         .run();
 //! }
 //! ```
@@ -128,7 +128,7 @@
 //! because the output of the RNG source for usize on 32-bit platforms
 //! is `u32` and thus is truncating the full output from the generator.
 //! As such, it will not be the same value between 32-bit and 64-bit platforms.
-//! 
+//!
 //! For ensuring stable results between 32-bit and 64-bit platforms, use the [`TurboRand::index`]
 //! method instead. All sampling/shuffing methods use this method internally to ensure
 //! stable results. Do note, [`TurboRand`] optimises cases for 64-bit platforms,
@@ -148,11 +148,13 @@
 #![cfg_attr(docsrs, allow(unused_attributes))]
 
 use bevy::prelude::*;
-#[cfg(any(feature = "chacha", feature = "wyrand"))]
-use turborand::prelude::*;
+#[cfg(feature = "chacha")]
+use turborand::prelude::ChaChaRng;
+#[cfg(feature = "wyrand")]
+use turborand::prelude::Rng;
 pub use turborand::{ForkableCore, GenCore, SecureCore, SeededCore, TurboCore, TurboRand};
 
-#[cfg(feature = "serialize")]
+#[cfg(all(any(feature = "chacha", feature = "wyrand"), feature = "serialize"))]
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "chacha")]
@@ -219,5 +221,3 @@ pub mod prelude;
 pub mod rng {
     pub use turborand::prelude::*;
 }
-
-pub use plugin::RngPlugin;

@@ -11,7 +11,7 @@ use crate::*;
 /// use bevy_turborand::prelude::*;
 ///
 /// App::new()
-///     .add_plugin(RngPlugin::new().with_rng_seed(12345))
+///     .add_plugins(RngPlugin::new().with_rng_seed(12345))
 ///     .run();
 ///
 /// ```
