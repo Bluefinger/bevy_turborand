@@ -4,11 +4,12 @@
 
 - Prepare release
 
-## [0.5.0] - 2023-03-06
+## [0.6.0] - 2023-07-10
 
 ### Chore
 
 - Update to latest bevy version
+- Prepare release
 
 ### Feat
 
