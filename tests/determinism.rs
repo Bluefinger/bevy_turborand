@@ -161,9 +161,10 @@ fn deterministic_play_through() {
 
     // Add the systems to our App. Order the necessary systems in order
     // to ensure deterministic behaviour.
-    app.add_system(attack_player);
-    app.add_system(attack_random_enemy);
-    app.add_system(buff_player.after(attack_player));
+    app.add_systems(
+        Update,
+        ((attack_random_enemy, buff_player).chain(), attack_player),
+    );
 
     // Run the game once!
     app.update();
@@ -197,8 +198,7 @@ fn deterministic_setup() {
 
     app.insert_resource(GlobalRng::with_seed(23456));
 
-    app.add_startup_system(setup_player);
-    app.add_startup_system(setup_enemies.after(setup_player));
+    app.add_systems(Startup, (setup_player, setup_enemies).chain());
 
     app.update();
 
@@ -229,8 +229,7 @@ fn deterministic_secure_setup() {
 
     app.insert_resource(GlobalChaChaRng::with_seed([1; 40]));
 
-    app.add_startup_system(setup_secure_player);
-    app.add_startup_system(setup_secure_enemies.after(setup_secure_player));
+    app.add_systems(Startup, (setup_secure_player, setup_secure_enemies).chain());
 
     app.update();
 

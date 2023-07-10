@@ -71,13 +71,14 @@ use crate::*;
 ///    }
 /// }
 /// ```
-#[derive(Debug, Clone, Component, PartialEq)]
+#[derive(Debug, Clone, Component, PartialEq, Reflect)]
 #[cfg_attr(docsrs, doc(cfg(feature = "wyrand")))]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 #[cfg_attr(
     feature = "serialize",
-    derive(Reflect, FromReflect, Serialize, Deserialize)
+    reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)
 )]
-#[reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(not(feature = "serialize"), reflect_value(Debug, PartialEq, Default))]
 pub struct RngComponent(#[reflect(default)] Rng);
 
 unsafe impl Sync for RngComponent {}

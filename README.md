@@ -33,9 +33,9 @@ fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
 
 fn main() {
     App::new()
-        .add_plugin(RngPlugin::default())
-        .add_startup_system(setup_player)
-        .add_system(do_damage)
+        .add_plugins(RngPlugin::default())
+        .add_systems(Startup, setup_player)
+        .add_systems(Update, do_damage)
         .run();
 }
 ```
@@ -52,6 +52,7 @@ To see an example of this, view the [project's tests](tests/determinism.rs) to s
 
 | `bevy_turborand` | `bevy` |
 |------------------|--------|
+| v0.6             | v0.11  |
 | v0.5             | v0.10  |
 | v0.4             | v0.9   |
 | v0.2, v0.3       | v0.8   |

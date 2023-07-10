@@ -2,7 +2,7 @@ use crate::*;
 use std::{fmt::Debug, ops::RangeBounds};
 
 #[cfg(feature = "rand")]
-use crate::RandBorrowed;
+use turborand::prelude::RandBorrowed;
 
 /// A trait for applying to [`Component`]s and Resources that wrap a [`TurboCore`] RNG source.
 ///

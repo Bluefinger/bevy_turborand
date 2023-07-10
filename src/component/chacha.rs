@@ -55,13 +55,14 @@ use crate::*;
 ///    }
 /// }
 /// ```
-#[derive(Debug, Clone, Component, PartialEq)]
+#[derive(Debug, Clone, Component, PartialEq, Reflect)]
 #[cfg_attr(docsrs, doc(cfg(feature = "chacha")))]
+#[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 #[cfg_attr(
     feature = "serialize",
-    derive(Reflect, FromReflect, Serialize, Deserialize)
+    reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)
 )]
-#[reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)]
+#[cfg_attr(not(feature = "serialize"), reflect_value(Debug, PartialEq, Default))]
 pub struct ChaChaRngComponent(#[reflect(default)] ChaChaRng);
 
 unsafe impl Sync for ChaChaRngComponent {}
