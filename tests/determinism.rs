@@ -282,12 +282,12 @@ fn load_chacha_rng_setup() {
 fn rng_reflection() {
     use bevy::reflect::{
         serde::{ReflectSerializer, UntypedReflectDeserializer},
-        TypeRegistryInternal,
+        TypeRegistry,
     };
     use ron::ser::to_string;
     use serde::de::DeserializeSeed;
 
-    let mut registry = TypeRegistryInternal::default();
+    let mut registry = TypeRegistry::default();
     registry.register::<RngComponent>();
 
     let mut val = RngComponent::with_seed(7);
@@ -322,11 +322,11 @@ fn rng_reflection() {
 fn chacha_rng_reflection() {
     use bevy::reflect::{
         serde::{ReflectSerializer, UntypedReflectDeserializer},
-        TypeRegistryInternal,
+        TypeRegistry,
     };
     use serde::de::DeserializeSeed;
 
-    let mut registry = TypeRegistryInternal::default();
+    let mut registry = TypeRegistry::default();
     registry.register::<ChaChaRngComponent>();
 
     let mut val = ChaChaRngComponent::with_seed([7; 40]);
