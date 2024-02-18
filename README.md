@@ -52,6 +52,7 @@ To see an example of this, view the [project's tests](tests/determinism.rs) to s
 
 | `bevy_turborand` | `bevy` |
 |------------------|--------|
+| v0.8             | v0.13  |
 | v0.7             | v0.12  |
 | v0.6             | v0.11  |
 | v0.5             | v0.10  |

@@ -1,6 +1,6 @@
 [package]
 name = "bevy_turborand"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2021"
 authors = ["Gonçalo Rica Pais da Silva <bluefinger@gmail.com>"]
 description = "A plugin to enable ECS optimised random number generation for the Bevy game engine."
@@ -13,7 +13,7 @@ resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy = { version = "0.12", default-features = false }
+bevy = { version = "0.13", default-features = false }
 serde = { version = "1.0", features = ["derive"], optional = true }
 turborand = { version = "0.10", default-features = false, features=["std", "fmt"] }
 
