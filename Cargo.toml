@@ -1,6 +1,6 @@
 [package]
 name = "bevy_turborand"
-version = "0.8.1"
+version = "0.8.2"
 edition = "2021"
 authors = ["Gonçalo Rica Pais da Silva <bluefinger@gmail.com>"]
 description = "A plugin to enable ECS optimised random number generation for the Bevy game engine."
@@ -11,15 +11,6 @@ categories = ["game-development", "game-engines"]
 exclude = ["/.*"]
 resolver = "2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[dependencies]
-bevy = { version = "0.13", default-features = false }
-serde = { version = "1.0", features = ["derive"], optional = true }
-turborand = { version = "0.10", default-features = false, features=["std", "fmt"] }
-
-[dev-dependencies]
-ron = "0.8"
-
 [features]
 default = ["wyrand", "serialize"]
 wyrand = ["turborand/wyrand"]
@@ -27,12 +18,20 @@ chacha = ["turborand/chacha"]
 serialize = ["turborand/serialize", "dep:serde"]
 rand = ["turborand/rand"]
 
-[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-test = "0.3"
+[dependencies]
+bevy = { version = "0.13", default-features = false }
+serde = { version = "1.0", features = ["derive"], optional = true }
+turborand = { version = "0.10", default-features = false, features=["std", "fmt"] }
 
-[target.'cfg(target_arch = "wasm32")'.dev-dependencies.instant]
+[target.'cfg(target_arch = "wasm32")'.dependencies.instant]
 version = "0.1"
 features = ["wasm-bindgen"]
+
+[dev-dependencies]
+ron = "0.8"
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3"
 
 [package.metadata.docs.rs]
 all-features = true
