@@ -283,7 +283,7 @@ fn load_chacha_rng_setup() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn rng_reflection() {
     use bevy::reflect::{
-        serde::{ReflectSerializer, UntypedReflectDeserializer},
+        serde::{ReflectDeserializer, ReflectSerializer},
         TypeRegistry,
     };
     use ron::ser::to_string;
@@ -305,7 +305,7 @@ fn rng_reflection() {
 
     let mut deserializer = ron::Deserializer::from_str(&serialized).unwrap();
 
-    let de = UntypedReflectDeserializer::new(&registry);
+    let de = ReflectDeserializer::new(&registry);
 
     let value = de.deserialize(&mut deserializer).unwrap();
 
