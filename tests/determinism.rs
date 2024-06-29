@@ -236,16 +236,16 @@ fn deterministic_secure_setup() {
     app.update();
 
     let mut q_player = app
-        .world()
+        .world_mut()
         .query_filtered::<&mut ChaChaRngComponent, With<Player>>();
-    let mut player = q_player.single_mut(&mut app.world());
+    let mut player = q_player.single_mut(app.world_mut());
 
     assert_eq!(player.u32(..=10), 0);
 
     let mut q_enemies = app
-        .world()
+        .world_mut()
         .query_filtered::<&mut ChaChaRngComponent, With<Enemy>>();
-    let mut enemies = q_enemies.iter_mut(&mut app.world());
+    let mut enemies = q_enemies.iter_mut(app.world_mut());
 
     let mut enemy_1 = enemies.next().unwrap();
 
@@ -323,7 +323,7 @@ fn rng_reflection() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn chacha_rng_reflection() {
     use bevy::reflect::{
-        serde::{ReflectSerializer, UntypedReflectDeserializer},
+        serde::{ReflectDeserializer, ReflectSerializer},
         TypeRegistry,
     };
     use serde::de::DeserializeSeed;
@@ -353,7 +353,7 @@ fn chacha_rng_reflection() {
 
     let mut deserializer = ron::Deserializer::from_str(&serialized).unwrap();
 
-    let de = UntypedReflectDeserializer::new(&registry);
+    let de = ReflectDeserializer::new(&registry);
 
     let value = de.deserialize(&mut deserializer).unwrap();
 
