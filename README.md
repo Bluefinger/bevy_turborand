@@ -50,15 +50,16 @@ To see an example of this, view the [project's tests](tests/determinism.rs) to s
 
 ## Supported Versions
 
-| `bevy_turborand` | `bevy` |
-|------------------|--------|
-| v0.8             | v0.13  |
-| v0.7             | v0.12  |
-| v0.6             | v0.11  |
-| v0.5             | v0.10  |
-| v0.4             | v0.9   |
-| v0.2, v0.3       | v0.8   |
-| v0.1             | v0.7   |
+| `bevy_turborand`   | `bevy`       |
+|--------------------|--------------|
+| v0.9.0-rc.1        | v0.14.0-rc.4 |
+| v0.8               | v0.13        |
+| v0.7               | v0.12        |
+| v0.6               | v0.11        |
+| v0.5               | v0.10        |
+| v0.4               | v0.9         |
+| v0.2, v0.3         | v0.8         |
+| v0.1               | v0.7         |
 
 MSRV for `bevy_turborand` is the same as in `bevy`, so always the latest Rust compiler version.
 
