@@ -105,7 +105,7 @@ fn deterministic_play_through() {
     // Set up the game App and World
     let mut app = App::new();
 
-    let world = &mut app.world;
+    let world = app.world_mut();
 
     // Initialise our global Rng resource
     let mut global_rng = GlobalRng::with_seed(12345);
@@ -170,25 +170,25 @@ fn deterministic_play_through() {
     app.update();
 
     // Check to see the health of our combatants
-    assert_eq!(app.world.get::<HitPoints>(player).unwrap().total, 100);
-    assert_eq!(app.world.get::<HitPoints>(enemy_1).unwrap().total, 20);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2).unwrap().total, 11);
+    assert_eq!(app.world().get::<HitPoints>(player).unwrap().total, 100);
+    assert_eq!(app.world().get::<HitPoints>(enemy_1).unwrap().total, 20);
+    assert_eq!(app.world().get::<HitPoints>(enemy_2).unwrap().total, 11);
 
     // Again!
     app.update();
 
     // Player OP. Enemy 2 is in trouble
-    assert_eq!(app.world.get::<HitPoints>(player).unwrap().total, 90);
-    assert_eq!(app.world.get::<HitPoints>(enemy_1).unwrap().total, 20);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2).unwrap().total, 3);
+    assert_eq!(app.world().get::<HitPoints>(player).unwrap().total, 90);
+    assert_eq!(app.world().get::<HitPoints>(enemy_1).unwrap().total, 20);
+    assert_eq!(app.world().get::<HitPoints>(enemy_2).unwrap().total, 3);
 
     // And again!
     app.update();
 
     // Enemy 2 is now deceased
-    assert_eq!(app.world.get::<HitPoints>(player).unwrap().total, 88);
-    assert_eq!(app.world.get::<HitPoints>(enemy_1).unwrap().total, 20);
-    assert_eq!(app.world.get::<HitPoints>(enemy_2).unwrap().total, 0);
+    assert_eq!(app.world().get::<HitPoints>(player).unwrap().total, 88);
+    assert_eq!(app.world().get::<HitPoints>(enemy_1).unwrap().total, 20);
+    assert_eq!(app.world().get::<HitPoints>(enemy_2).unwrap().total, 0);
 }
 
 #[test]
@@ -203,14 +203,16 @@ fn deterministic_setup() {
     app.update();
 
     let mut q_player = app
-        .world
+        .world_mut()
         .query_filtered::<&mut RngComponent, With<Player>>();
-    let mut player = q_player.single_mut(&mut app.world);
+    let mut player = q_player.single_mut(app.world_mut());
 
     assert_eq!(player.u32(..=10), 10);
 
-    let mut q_enemies = app.world.query_filtered::<&mut RngComponent, With<Enemy>>();
-    let mut enemies = q_enemies.iter_mut(&mut app.world);
+    let mut q_enemies = app
+        .world_mut()
+        .query_filtered::<&mut RngComponent, With<Enemy>>();
+    let mut enemies = q_enemies.iter_mut(app.world_mut());
 
     let mut enemy_1 = enemies.next().unwrap();
 
@@ -234,16 +236,16 @@ fn deterministic_secure_setup() {
     app.update();
 
     let mut q_player = app
-        .world
+        .world_mut()
         .query_filtered::<&mut ChaChaRngComponent, With<Player>>();
-    let mut player = q_player.single_mut(&mut app.world);
+    let mut player = q_player.single_mut(app.world_mut());
 
     assert_eq!(player.u32(..=10), 0);
 
     let mut q_enemies = app
-        .world
+        .world_mut()
         .query_filtered::<&mut ChaChaRngComponent, With<Enemy>>();
-    let mut enemies = q_enemies.iter_mut(&mut app.world);
+    let mut enemies = q_enemies.iter_mut(app.world_mut());
 
     let mut enemy_1 = enemies.next().unwrap();
 
@@ -281,7 +283,7 @@ fn load_chacha_rng_setup() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn rng_reflection() {
     use bevy::reflect::{
-        serde::{ReflectSerializer, UntypedReflectDeserializer},
+        serde::{ReflectDeserializer, ReflectSerializer},
         TypeRegistry,
     };
     use ron::ser::to_string;
@@ -303,7 +305,7 @@ fn rng_reflection() {
 
     let mut deserializer = ron::Deserializer::from_str(&serialized).unwrap();
 
-    let de = UntypedReflectDeserializer::new(&registry);
+    let de = ReflectDeserializer::new(&registry);
 
     let value = de.deserialize(&mut deserializer).unwrap();
 
@@ -321,7 +323,7 @@ fn rng_reflection() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn chacha_rng_reflection() {
     use bevy::reflect::{
-        serde::{ReflectSerializer, UntypedReflectDeserializer},
+        serde::{ReflectDeserializer, ReflectSerializer},
         TypeRegistry,
     };
     use serde::de::DeserializeSeed;
@@ -351,7 +353,7 @@ fn chacha_rng_reflection() {
 
     let mut deserializer = ron::Deserializer::from_str(&serialized).unwrap();
 
-    let de = UntypedReflectDeserializer::new(&registry);
+    let de = ReflectDeserializer::new(&registry);
 
     let value = de.deserialize(&mut deserializer).unwrap();
 
