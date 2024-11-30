@@ -309,7 +309,7 @@ fn rng_reflection() {
 
     let value = de.deserialize(&mut deserializer).unwrap();
 
-    let mut dynamic = value.take::<RngComponent>().unwrap();
+    let mut dynamic = RngComponent::take_from_reflect(value).unwrap();
 
     assert_eq!(val.get_mut(), dynamic.get_mut());
 
@@ -357,7 +357,7 @@ fn chacha_rng_reflection() {
 
     let value = de.deserialize(&mut deserializer).unwrap();
 
-    let mut dynamic = value.take::<ChaChaRngComponent>().unwrap();
+    let mut dynamic = ChaChaRngComponent::take_from_reflect(value).unwrap();
 
     assert_eq!(val.get_mut(), dynamic.get_mut());
 

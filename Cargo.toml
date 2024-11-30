@@ -19,7 +19,7 @@ serialize = ["turborand/serialize", "dep:serde"]
 rand = ["turborand/rand"]
 
 [dependencies]
-bevy = { version = "0.14", default-features = false }
+bevy = { version = "0.15", default-features = false }
 serde = { version = "1.0", features = ["derive"], optional = true }
 turborand = { version = "0.10", default-features = false, features = [
   "std",

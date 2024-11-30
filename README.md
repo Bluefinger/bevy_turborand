@@ -5,6 +5,12 @@
 [![Cargo](https://img.shields.io/crates/v/bevy_turborand.svg)](https://crates.io/crates/bevy_turborand)
 [![Documentation](https://docs.rs/bevy_turborand/badge.svg)](https://docs.rs/bevy_turborand)
 
+## Notice
+
+For all intents and purposes, `bevy_turborand` will no longer receive new features or work, and is mostly on maintenance only mode. I will keep this crate up-to-date with bevy releases, but otherwise all new work and efforts is currently directed towards [`bevy_rand`](https://github.com/Bluefinger/bevy_rand). Folks who wish to add more capability to this crate are free to submit PRs.
+
+## Summary
+
 A plugin to enable random number generation for the Bevy game engine, built upon [`turborand`](https://github.com/Bluefinger/turborand). Implements ideas from Bevy's [Deterministic RNG RFC](https://github.com/bevyengine/rfcs/pull/55).
 
 `turborand`'s internal implementation uses [Wyrand](https://github.com/wangyi-fudan/wyhash), a simple and fast generator but **not** cryptographically secure, as well as [ChaCha8](https://cr.yp.to/chacha.html), a cryptographically secure generator tuned to 8 rounds of the ChaCha algorithm for increased throughput without sacrificing too much security, as per the recommendations in the [Too Much Crypto](https://eprint.iacr.org/2019/1492.pdf) paper.
@@ -52,7 +58,8 @@ To see an example of this, view the [project's tests](tests/determinism.rs) to s
 
 | `bevy_turborand`   | `bevy`       |
 |--------------------|--------------|
-| v0.9.0-rc.1        | v0.14.0-rc.4 |
+| v0.10              | v0.15        |
+| v0.9               | v0.14        |
 | v0.8               | v0.13        |
 | v0.7               | v0.12        |
 | v0.6               | v0.11        |
