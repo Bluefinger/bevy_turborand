@@ -26,6 +26,14 @@
 //! entity, it then makes the question of stable ordering in queries moot.
 //! Thus, determinism can be achieved regardless of unstable query ordering
 //! and multi-threaded execution.
+//! 
+//! ## Notice
+//!
+//! For all intents and purposes, `bevy_turborand` will no longer receive new features
+//! or work, and is mostly on maintenance only mode. I will keep this crate up-to-date
+//! with bevy releases, but otherwise all new work and efforts is currently directed towards
+//! [`bevy_rand`](https://github.com/Bluefinger/bevy_rand). Folks who wish to add more
+//! capability to this crate are free to submit PRs.
 //!
 //! # Usage
 //!
