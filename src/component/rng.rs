@@ -76,10 +76,10 @@ use crate::*;
 #[cfg_attr(feature = "serialize", derive(Serialize, Deserialize))]
 #[cfg_attr(
     feature = "serialize",
-    reflect_value(Debug, PartialEq, Default, Serialize, Deserialize)
+    reflect(opaque, Debug, PartialEq, Default, Serialize, Deserialize)
 )]
-#[cfg_attr(not(feature = "serialize"), reflect_value(Debug, PartialEq, Default))]
-pub struct RngComponent(#[reflect(default)] Rng);
+#[cfg_attr(not(feature = "serialize"), reflect(opaque, Debug, PartialEq, Default))]
+pub struct RngComponent(Rng);
 
 unsafe impl Sync for RngComponent {}
 
