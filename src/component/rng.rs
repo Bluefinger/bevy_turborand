@@ -103,7 +103,6 @@ impl DelegatedRng for RngComponent {
     type Source = Rng;
 
     #[inline]
-    #[must_use]
     fn get_mut(&mut self) -> &mut Self::Source {
         &mut self.0
     }
@@ -121,7 +120,6 @@ impl Default for RngComponent {
 
 impl<T: TurboCore + GenCore> From<&T> for RngComponent {
     #[inline]
-    #[must_use]
     fn from(rng: &T) -> Self {
         Self(Rng::with_seed(rng.gen_u64()))
     }
@@ -129,7 +127,6 @@ impl<T: TurboCore + GenCore> From<&T> for RngComponent {
 
 impl<T: DelegatedRng> From<&mut T> for RngComponent {
     #[inline]
-    #[must_use]
     fn from(rng: &mut T) -> Self {
         Self(Rng::with_seed(rng.get_mut().gen_u64()))
     }
@@ -137,7 +134,6 @@ impl<T: DelegatedRng> From<&mut T> for RngComponent {
 
 impl<T: DelegatedRng> From<&mut Mut<'_, T>> for RngComponent {
     #[inline]
-    #[must_use]
     fn from(rng: &mut Mut<'_, T>) -> Self {
         Self(Rng::with_seed(rng.get_mut().gen_u64()))
     }
@@ -145,7 +141,6 @@ impl<T: DelegatedRng> From<&mut Mut<'_, T>> for RngComponent {
 
 impl<T: DelegatedRng + Resource + Send + Sync + 'static> From<&mut ResMut<'_, T>> for RngComponent {
     #[inline]
-    #[must_use]
     fn from(rng: &mut ResMut<'_, T>) -> Self {
         Self(Rng::with_seed(rng.get_mut().gen_u64()))
     }

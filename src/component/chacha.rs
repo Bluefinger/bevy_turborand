@@ -70,14 +70,12 @@ unsafe impl Sync for ChaChaRngComponent {}
 impl ChaChaRngComponent {
     /// Create a new [`ChaChaRngComponent`] with a randomised seed.
     #[inline]
-    #[must_use]
     pub fn new() -> Self {
         Self(ChaChaRng::new())
     }
 
     /// Create a new [`ChaChaRngComponent`] with a given seed.
     #[inline]
-    #[must_use]
     pub fn with_seed(seed: [u8; 40]) -> Self {
         Self(ChaChaRng::with_seed(seed))
     }
@@ -87,7 +85,6 @@ impl DelegatedRng for ChaChaRngComponent {
     type Source = ChaChaRng;
 
     #[inline]
-    #[must_use]
     fn get_mut(&mut self) -> &mut Self::Source {
         &mut self.0
     }
@@ -105,7 +102,6 @@ impl Default for ChaChaRngComponent {
 
 impl<T: TurboCore + GenCore + SecureCore> From<&T> for ChaChaRngComponent {
     #[inline]
-    #[must_use]
     fn from(rng: &T) -> Self {
         Self(ChaChaRng::with_seed(rng.r#gen()))
     }
@@ -116,7 +112,6 @@ where
     T::Source: SecureCore,
 {
     #[inline]
-    #[must_use]
     fn from(rng: &mut T) -> Self {
         Self(ChaChaRng::with_seed(rng.get_mut().r#gen()))
     }
@@ -127,7 +122,6 @@ where
     T::Source: SecureCore,
 {
     #[inline]
-    #[must_use]
     fn from(rng: &mut Mut<'_, T>) -> Self {
         Self(ChaChaRng::with_seed(rng.get_mut().r#gen()))
     }
@@ -139,7 +133,6 @@ where
     T::Source: SecureCore,
 {
     #[inline]
-    #[must_use]
     fn from(rng: &mut ResMut<'_, T>) -> Self {
         Self(ChaChaRng::with_seed(rng.get_mut().r#gen()))
     }
