@@ -61,7 +61,7 @@ fn attack_player(
     mut q_player: Query<&mut HitPoints, (With<Player>, Without<Enemy>)>,
     mut q_enemies: Query<(&Attack, &mut RngComponent), (With<Enemy>, Without<Player>)>,
 ) {
-    let mut player = q_player.single_mut();
+    let mut player = q_player.single_mut().unwrap();
 
     for (attack, mut rng) in q_enemies.iter_mut() {
         if rng.chance(attack.hit) {
@@ -77,7 +77,7 @@ fn attack_random_enemy(
     mut q_enemies: Query<&mut HitPoints, (With<Enemy>, Without<Player>)>,
     mut q_player: Query<(&Attack, &mut RngComponent), (With<Player>, Without<Enemy>)>,
 ) {
-    let (attack, mut rng) = q_player.single_mut();
+    let (attack, mut rng) = q_player.single_mut().unwrap();
 
     for mut enemy in q_enemies.iter_mut() {
         if rng.chance(attack.hit) {
@@ -89,7 +89,7 @@ fn attack_random_enemy(
 
 /// A system to randomly apply a healing effect on the player.
 fn buff_player(mut q_player: Query<(&mut HitPoints, &mut RngComponent, &Buff), With<Player>>) {
-    let (mut player, mut rng, buff) = q_player.single_mut();
+    let (mut player, mut rng, buff) = q_player.single_mut().unwrap();
 
     if rng.chance(buff.chance) {
         player.total = player
@@ -205,7 +205,7 @@ fn deterministic_setup() {
     let mut q_player = app
         .world_mut()
         .query_filtered::<&mut RngComponent, With<Player>>();
-    let mut player = q_player.single_mut(app.world_mut());
+    let mut player = q_player.single_mut(app.world_mut()).unwrap();
 
     assert_eq!(player.u32(..=10), 10);
 
@@ -238,7 +238,7 @@ fn deterministic_secure_setup() {
     let mut q_player = app
         .world_mut()
         .query_filtered::<&mut ChaChaRngComponent, With<Player>>();
-    let mut player = q_player.single_mut(app.world_mut());
+    let mut player = q_player.single_mut(app.world_mut()).unwrap();
 
     assert_eq!(player.u32(..=10), 0);
 
