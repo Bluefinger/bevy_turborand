@@ -44,7 +44,7 @@ use crate::*;
 ///    mut commands: Commands,
 ///    mut q_source: Query<&mut ChaChaRngComponent, (With<Source>, Without<Enemy>)>,
 /// ) {
-///    let mut source = q_source.single_mut();
+///    let mut source = q_source.single_mut().unwrap();
 ///
 ///    for _ in 0..2 {
 ///        commands
@@ -107,7 +107,7 @@ impl<T: TurboCore + GenCore + SecureCore> From<&T> for ChaChaRngComponent {
     #[inline]
     #[must_use]
     fn from(rng: &T) -> Self {
-        Self(ChaChaRng::with_seed(rng.gen()))
+        Self(ChaChaRng::with_seed(rng.r#gen()))
     }
 }
 
@@ -118,7 +118,7 @@ where
     #[inline]
     #[must_use]
     fn from(rng: &mut T) -> Self {
-        Self(ChaChaRng::with_seed(rng.get_mut().gen()))
+        Self(ChaChaRng::with_seed(rng.get_mut().r#gen()))
     }
 }
 
@@ -129,7 +129,7 @@ where
     #[inline]
     #[must_use]
     fn from(rng: &mut Mut<'_, T>) -> Self {
-        Self(ChaChaRng::with_seed(rng.get_mut().gen()))
+        Self(ChaChaRng::with_seed(rng.get_mut().r#gen()))
     }
 }
 
@@ -141,6 +141,6 @@ where
     #[inline]
     #[must_use]
     fn from(rng: &mut ResMut<'_, T>) -> Self {
-        Self(ChaChaRng::with_seed(rng.get_mut().gen()))
+        Self(ChaChaRng::with_seed(rng.get_mut().r#gen()))
     }
 }

@@ -60,7 +60,7 @@ use crate::*;
 ///    mut commands: Commands,
 ///    mut q_source: Query<&mut RngComponent, (With<Source>, Without<Enemy>)>,
 /// ) {
-///    let mut source = q_source.single_mut();
+///    let mut source = q_source.single_mut().unwrap();
 ///
 ///    for _ in 0..2 {
 ///        commands

@@ -89,7 +89,7 @@
 //! }
 //!
 //! fn do_damage(mut q_player: Query<&mut RngComponent, With<Player>>) {
-//!     let mut rng = q_player.single_mut();
+//!     let mut rng = q_player.single_mut().unwrap();
 //!
 //!     println!("Player attacked for {} damage!", rng.u32(10..=20));
 //! }
