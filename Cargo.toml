@@ -1,6 +1,6 @@
 [package]
 name = "bevy_turborand"
-version = "0.12.0"
+version = "0.13.0"
 edition = "2021"
 authors = ["Gonçalo Rica Pais da Silva <bluefinger@gmail.com>"]
 description = "A plugin to enable ECS optimised random number generation for the Bevy game engine."
